@@ -40,335 +40,8 @@ The final training composition will be determined only after dataset profiling, 
 
 ---
 
-# 2. Dataset Sources
 
-## 2.1 TrashNet
-
-**Source:**
-https://github.com/garythung/trashnet
-
-**Type:** Image classification
-
-**Purpose in this project:** Baseline dataset
-
-### Description
-
-TrashNet is a commonly used waste-image dataset containing images from six waste categories:
-
-* Glass
-* Paper
-* Cardboard
-* Plastic
-* Metal
-* Trash
-
-The original repository reports **2,527 images**:
-
-| Class     |    Images |
-| --------- | --------: |
-| Glass     |       501 |
-| Paper     |       594 |
-| Cardboard |       403 |
-| Plastic   |       482 |
-| Metal     |       410 |
-| Trash     |       137 |
-| **Total** | **2,527** |
-
-The images were photographed by placing waste objects on a white posterboard using sunlight and/or room lighting. The repository reports resized images at approximately **512 × 384 pixels**.
-
-### Role
-
-TrashNet will primarily be used to:
-
-1. Establish an initial classification baseline.
-2. Test the EfficientNet-B0 training pipeline.
-3. Evaluate performance on a relatively controlled dataset.
-4. Compare performance against more realistic datasets.
-
-### Limitation
-
-The controlled background and image acquisition conditions may not represent photographs taken by users in real-world environments.
-
-Therefore, TrashNet should **not be treated as sufficient evidence of real-world performance**.
-
-### License
-
-MIT License, according to the source repository.
-
-### Citation
-
-Please cite the original TrashNet repository when using this dataset.
-
----
-
-# 3. RealWaste
-
-**Source:**
-https://archive.ics.uci.edu/dataset/908/realwaste
-
-**Type:** Image classification
-
-**Purpose in this project:** Real-world waste classification and generalization
-
-### Description
-
-RealWaste is a waste-image dataset containing **4,752 images across nine material categories**.
-
-The dataset was collected in an authentic landfill/facility environment, making it useful for studying waste classification under less controlled visual conditions.
-
-The nine categories are:
-
-* Cardboard
-* Food Organics
-* Glass
-* Metal
-* Miscellaneous Trash
-* Paper
-* Plastic
-* Textile Trash
-* Vegetation
-
-### Role
-
-RealWaste will be used to:
-
-1. Evaluate classification on more realistic waste imagery.
-2. Compare against the controlled TrashNet baseline.
-3. Investigate generalization across different visual conditions.
-4. Potentially contribute to the combined training dataset.
-
-### Importance
-
-RealWaste is particularly important because our intended application involves photographs captured in normal environments rather than objects photographed exclusively against clean backgrounds.
-
-### License
-
-The UCI dataset/source information should be reviewed before redistribution or modification.
-
-### Citation
-
-Use the official UCI RealWaste dataset citation and source information.
-
----
-
-# 4. PhenomSG Waste Classification Dataset
-
-**Source:**
-https://www.kaggle.com/datasets/phenomsg/waste-classification
-
-**Type:** Image classification
-
-**Purpose in this project:** Broader waste coverage, including hazardous and special waste
-
-### Description
-
-The dataset is described as containing **30,000+ labeled images** covering four major waste groups:
-
-* Hazardous
-* Non-Recyclable
-* Organic
-* Recyclable
-
-The dataset documentation describes the following subcategories:
-
-### Hazardous
-
-* Batteries
-* Chemical-Waste
-* Medical-Waste
-
-### Non-Recyclable
-
-* Plastic-Wrappers
-* Styrofoam
-* Food-Cups
-
-### Organic
-
-* Food-Waste
-* Green-Waste
-
-### Recyclable
-
-* Paper
-* Glass
-* Plastic-Bottles
-
-### Role
-
-This dataset is particularly relevant to the safety-oriented part of our project.
-
-It can provide additional examples of:
-
-* Batteries
-* Chemical waste
-* Medical waste
-* Organic waste
-* Plastic bottles
-* Paper
-* Glass
-* Non-recyclable materials
-
-These categories can help us investigate whether the model can distinguish ordinary waste from materials requiring special handling.
-
-### Important Dataset Note
-
-The dataset's headline describes 30,000+ images, while the currently displayed Kaggle data explorer reports a smaller file count for the downloadable version.
-
-Therefore, the **actual downloaded dataset will be profiled locally** before we use it.
-
-We will not assume the advertised image count is the final number used in our experiments.
-
-### Role in Final Training
-
-The dataset will **not automatically be merged** with the other datasets.
-
-Before inclusion, we will examine:
-
-* Actual image count
-* Class distribution
-* Image quality
-* Duplicate images
-* Label consistency
-* Visual similarity with other datasets
-* Class overlap
-* Licensing/provenance
-* Suitability for our final taxonomy
-
-### License
-
-MIT License, according to the Kaggle dataset page.
-
----
-
-# 5. E-Waste Image Dataset
-
-**Source:**
-https://www.kaggle.com/datasets/akshat103/e-waste-image-dataset
-
-**Type:** Image classification
-
-**Purpose in this project:** E-waste and special-material coverage
-
-### Description
-
-This dataset contains images of electronic waste divided into ten classes:
-
-1. PCB
-2. Player
-3. Battery
-4. Microwave
-5. Mobile
-6. Mouse
-7. Printer
-8. Television
-9. Washing Machine
-10. Keyboard
-
-The dataset is organized into:
-
-```text
-Train/
-Test/
-Validation/
-```
-
-### Role
-
-The dataset will be investigated for strengthening the model's ability to recognize electronic and special waste.
-
-Potential internal mapping:
-
-```text
-Mobile
-Keyboard
-Mouse
-Printer
-Television
-Microwave
-Washing Machine
-PCB
-Player
-        |
-        v
-     E-Waste
-```
-
-Battery requires special consideration because it can belong to a different safety/disposal pathway from ordinary electronic devices.
-
-### Important Dataset Note
-
-We will not automatically merge all ten classes into the main model.
-
-First we will determine whether:
-
-* Fine-grained e-waste classes are useful.
-* All electronic items should map to a broader `E-Waste` class.
-* Battery should be separated as `Battery / Hazardous`.
-* The images are visually compatible with the other datasets.
-
-### License
-
-Apache License 2.0, according to the Kaggle dataset page.
-
----
-
-# 6. TACO — External Robustness Dataset
-
-**Source:**
-https://tacodataset.org/
-
-**Type:** Object detection / segmentation / litter dataset
-
-**Purpose in this project:** External generalization and robustness testing
-
-### Description
-
-TACO (Trash Annotations in Context) contains images of litter in diverse real-world environments and provides annotations suitable for computer vision tasks such as detection and segmentation.
-
-### Role
-
-TACO will initially **not be used as a normal training dataset**.
-
-Instead, it will be considered as an external evaluation source.
-
-The purpose is to test whether a model trained on other waste datasets can handle:
-
-* Different backgrounds
-* Outdoor environments
-* Different lighting
-* Occlusion
-* Litter in context
-* More complex scenes
-
-This helps us evaluate domain shift and real-world robustness.
-
----
-
-# 7. Own / Real-World Test Images
-
-In addition to public datasets, we plan to create a small independent collection of photographs for final testing.
-
-These images may be captured using:
-
-* Mobile phones
-* Different lighting conditions
-* Different backgrounds
-* Different distances
-* Different orientations
-* Real household waste environments
-
-### Important Rule
-
-Images used for the final independent test set must **not be used for model training**.
-
-The purpose is to answer:
-
-> Does the trained model work on photographs similar to what an actual user might submit?
-
----
-
-# 8. Dataset Roles
+# 2. Dataset Roles
 
 | Dataset    | Primary Role                 |     Training | Internal Testing | External Testing |
 | ---------- | ---------------------------- | -----------: | ---------------: | ---------------: |
@@ -381,7 +54,7 @@ The purpose is to answer:
 
 ---
 
-# 9. Planned Experiments
+# 3. Planned Experiments
 
 The datasets will be evaluated progressively rather than merged immediately.
 
@@ -503,7 +176,7 @@ The purpose is to measure real-world robustness rather than only benchmark perfo
 
 ---
 
-# 10. Final ML Taxonomy
+# 4. Final ML Taxonomy
 
 The final ML classes are **not yet fixed**.
 
@@ -528,7 +201,7 @@ This taxonomy will be finalized only after dataset profiling.
 
 ---
 
-# 11. ML Classes vs Disposal Categories
+# 5. ML Classes vs Disposal Categories
 
 The neural network should identify what the item **looks like/materially represents**.
 
@@ -556,7 +229,7 @@ A visual classifier should not independently claim that an item is universally r
 
 ---
 
-# 12. Dataset Processing Pipeline
+# 6. Dataset Processing Pipeline
 
 Before training, every dataset will go through:
 
@@ -586,7 +259,7 @@ Model Training
 
 ---
 
-# 13. Data Leakage Prevention
+# 7. Data Leakage Prevention
 
 The same image, or near-duplicate versions of the same image, must not appear across training and evaluation sets.
 
@@ -603,7 +276,7 @@ External test datasets will remain isolated from model development whenever poss
 
 ---
 
-# 14. Dataset Directory Structure
+# 8. Dataset Directory Structure
 
 The local dataset directory should eventually follow:
 
@@ -634,7 +307,7 @@ Processed datasets should be generated by reproducible scripts rather than manua
 
 ---
 
-# 15. Dataset Profiling Requirements
+# 9. Dataset Profiling Requirements
 
 Before training the final model, the following information will be recorded for every dataset:
 
@@ -659,7 +332,7 @@ Before training the final model, the following information will be recorded for 
 
 ---
 
-# 16. Important Principles
+# 10. Important Principles
 
 ### Do not train before profiling
 
@@ -683,7 +356,7 @@ The final system should have an **Uncertain** state for ambiguous, unsupported, 
 
 ---
 
-## 17. Current Status
+## 11. Current Status
 
 | Dataset                    | Status                           |
 | -------------------------- | -------------------------------- |
