@@ -1,0 +1,11 @@
+metric,value
+total_images,13196
+ok_images,10928
+warning_images,2268
+error_images,0
+issue_extreme_aspect_ratio,1
+issue_non_rgb_mode,253
+issue_possible_blur,1878
+issue_transparency,19
+issue_very_bright,168
+issue_very_dark,11

@@ -1,0 +1,162 @@
+{
+  "dataset": "Dataset V1 Curated",
+  "manifest": "C:\\Users\\trish\\Desktop\\smart-waste-segregation-ai\\data\\reports\\dataset_v1_curated_manifest.csv",
+  "total_images": 13196,
+  "number_of_classes": 16,
+  "splits": {
+    "train": {
+      "count": 9237,
+      "percentage": 70.0
+    },
+    "val": {
+      "count": 1980,
+      "percentage": 15.0
+    },
+    "test": {
+      "count": 1979,
+      "percentage": 15.0
+    }
+  },
+  "classes": {
+    "Electronic Device": {
+      "total": 1500,
+      "percentage": 11.37,
+      "train": 1065,
+      "val": 197,
+      "test": 238
+    },
+    "Plastic": {
+      "total": 1403,
+      "percentage": 10.63,
+      "train": 969,
+      "val": 221,
+      "test": 213
+    },
+    "Residual": {
+      "total": 1277,
+      "percentage": 9.68,
+      "train": 886,
+      "val": 219,
+      "test": 172
+    },
+    "Metal": {
+      "total": 1200,
+      "percentage": 9.09,
+      "train": 799,
+      "val": 199,
+      "test": 202
+    },
+    "Paper": {
+      "total": 1094,
+      "percentage": 8.29,
+      "train": 747,
+      "val": 172,
+      "test": 175
+    },
+    "Hazardous Waste": {
+      "total": 939,
+      "percentage": 7.12,
+      "train": 819,
+      "val": 65,
+      "test": 55
+    },
+    "Glass": {
+      "total": 921,
+      "percentage": 6.98,
+      "train": 628,
+      "val": 152,
+      "test": 141
+    },
+    "Large Electronic Appliance": {
+      "total": 900,
+      "percentage": 6.82,
+      "train": 625,
+      "val": 128,
+      "test": 147
+    },
+    "Cardboard": {
+      "total": 864,
+      "percentage": 6.55,
+      "train": 588,
+      "val": 143,
+      "test": 133
+    },
+    "Organic Stream": {
+      "total": 674,
+      "percentage": 5.11,
+      "train": 433,
+      "val": 117,
+      "test": 124
+    },
+    "Recyclable Stream": {
+      "total": 659,
+      "percentage": 4.99,
+      "train": 455,
+      "val": 110,
+      "test": 94
+    },
+    "Vegetation": {
+      "total": 436,
+      "percentage": 3.3,
+      "train": 303,
+      "val": 62,
+      "test": 71
+    },
+    "Food Organics": {
+      "total": 411,
+      "percentage": 3.11,
+      "train": 278,
+      "val": 65,
+      "test": 68
+    },
+    "Textile": {
+      "total": 318,
+      "percentage": 2.41,
+      "train": 207,
+      "val": 47,
+      "test": 64
+    },
+    "Battery": {
+      "total": 300,
+      "percentage": 2.27,
+      "train": 219,
+      "val": 36,
+      "test": 45
+    },
+    "Electronic Component": {
+      "total": 300,
+      "percentage": 2.27,
+      "train": 216,
+      "val": 47,
+      "test": 37
+    }
+  },
+  "leakage": {
+    "total_groups": 12686,
+    "multi_image_groups": 461,
+    "grouped_images": 971,
+    "cross_split_groups": 0
+  },
+  "duplicates": {
+    "exact_images": 644,
+    "exact_groups": 320,
+    "near_duplicate_images": 971,
+    "near_duplicate_groups": 461
+  },
+  "label_conflicts": {
+    "conflicting_groups": 35
+  },
+  "file_integrity": {
+    "images_found": 13196,
+    "images_missing": 0
+  },
+  "retention": {
+    "original_images": 2527,
+    "curated_images": 13196,
+    "excluded_images": 0,
+    "retention_percentage": 522.2
+  },
+  "checks": {
+    "required_columns": true,
+    "missing_required_values": true,
+    "duplicate_paths": 

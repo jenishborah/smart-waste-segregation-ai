@@ -1,0 +1,50 @@
+dataset,original_class,split,image_count
+ewaste,Battery,test,30
+ewaste,Battery,train,240
+ewaste,Battery,validation,30
+ewaste,Keyboard,test,30
+ewaste,Keyboard,train,240
+ewaste,Keyboard,validation,30
+ewaste,Microwave,test,30
+ewaste,Microwave,train,240
+ewaste,Microwave,validation,30
+ewaste,Mobile,test,30
+ewaste,Mobile,train,240
+ewaste,Mobile,validation,30
+ewaste,Mouse,test,30
+ewaste,Mouse,train,240
+ewaste,Mouse,validation,30
+ewaste,PCB,test,30
+ewaste,PCB,train,240
+ewaste,PCB,validation,30
+ewaste,Player,test,30
+ewaste,Player,train,240
+ewaste,Player,validation,30
+ewaste,Printer,test,30
+ewaste,Printer,train,240
+ewaste,Printer,validation,30
+ewaste,Television,test,30
+ewaste,Television,train,240
+ewaste,Television,validation,30
+ewaste,Washing Machine,test,30
+ewaste,Washing Machine,train,240
+ewaste,Washing Machine,validation,30
+phenomsg,Hazardous,unspecified,939
+phenomsg,Non-Recyclable,unspecified,645
+phenomsg,Organic,unspecified,674
+phenomsg,Recyclable,unspecified,659
+realwaste,Cardboard,unspecified,461
+realwaste,Food Organics,unspecified,411
+realwaste,Glass,unspecified,420
+realwaste,Metal,unspecified,790
+realwaste,Miscellaneous Trash,unspecified,495
+realwaste,Paper,unspecified,500
+realwaste,Plastic,unspecified,921
+realwaste,Textile Trash,unspecified,318
+realwaste,Vegetation,unspecified,436
+trashnet,cardboard,unspecified,403
+trashnet,glass,unspecified,501
+trashnet,metal,unspecified,410
+trashnet,paper,unspecified,594
+trashnet,plastic,unspecified,482
+trashnet,trash,unspecified,137

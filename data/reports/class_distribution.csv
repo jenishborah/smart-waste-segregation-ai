@@ -1,0 +1,44 @@
+dataset,class_name,image_count
+trashnet,cardboard,403
+trashnet,glass,501
+trashnet,metal,410
+trashnet,paper,594
+trashnet,plastic,482
+trashnet,trash,137
+realwaste,Cardboard,461
+realwaste,Food Organics,411
+realwaste,Glass,420
+realwaste,Metal,790
+realwaste,Miscellaneous Trash,495
+realwaste,Paper,500
+realwaste,Plastic,921
+realwaste,Textile Trash,318
+realwaste,Vegetation,436
+phenomsg,batteries,110
+phenomsg,cans_all_type,272
+phenomsg,ceramic_product,138
+phenomsg,coffee_tea_bags,157
+phenomsg,diapers,145
+phenomsg,e-waste,538
+phenomsg,egg_shells,125
+phenomsg,food_scraps,147
+phenomsg,glass_containers,140
+phenomsg,kitchen_waste,114
+phenomsg,paints,153
+phenomsg,paper_products,121
+phenomsg,pesticides,138
+phenomsg,plastic_bottles,126
+phenomsg,platics_bags_wrappers,134
+phenomsg,sanitary_napkin,110
+phenomsg,stroform_product,118
+phenomsg,yard_trimmings,131
+ewaste,Battery,300
+ewaste,Keyboard,300
+ewaste,Microwave,300
+ewaste,Mobile,300
+ewaste,Mouse,300
+ewaste,PCB,300
+ewaste,Player,300
+ewaste,Printer,300
+ewaste,Television,300
+ewaste,Washing Machine,300

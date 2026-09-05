@@ -1,0 +1,7 @@
+dataset,split,image_count
+trashnet,unspecified,2527
+realwaste,unspecified,4752
+phenomsg,unspecified,2917
+ewaste,test,300
+ewaste,train,2400
+ewaste,validation,300

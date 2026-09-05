@@ -1,257 +1,118 @@
-"""
-Smart Waste Segregation AI
-Model Interface
-
-Loads the trained EfficientNet-B0 model and provides
-a simple interface for image prediction.
+"""Local EfficientNet-B0 inference interface.
 
 Usage:
-    python ml/interface.py path/to/image.jpg
-
-Or from Python:
-    from ml.interface import predict_image
-    result = predict_image("image.jpg")
+    python ml/interface.py "data/raw/realwaste/Plastic/Plastic_821.jpg"
 """
 
-from pathlib import Path
+import argparse
 import json
-import sys
+from pathlib import Path
 
 import torch
-import torch.nn.functional as F
-from PIL import Image
+import torch.nn as nn
+from PIL import Image, ImageFile
 from torchvision import models, transforms
 
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-# ============================================================
-# PROJECT PATHS
-# ============================================================
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-MODEL_DIR = (
-    PROJECT_ROOT
-    / "training_outputs"
-    / "efficientnet_b0_cached"
-)
-
+ROOT = Path(__file__).resolve().parents[1]
+MODEL_DIR = ROOT / "training_outputs" / "efficientnet_b0_cached"
 MODEL_PATH = MODEL_DIR / "best_model.pth"
-CLASS_NAMES_PATH = MODEL_DIR / "class_names.json"
-CLASS_TO_IDX_PATH = MODEL_DIR / "class_to_idx.json"
 
 
-# ============================================================
-# DEVICE
-# ============================================================
-
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-# ============================================================
-# IMAGE TRANSFORMATION
-# ============================================================
-
-# Must match the 224x224 input used during training.
-TRANSFORM = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225],
-    ),
-])
-
-
-# ============================================================
-# LOAD CLASS NAMES
-# ============================================================
-
-def load_class_names():
-    """
-    Load class names from class_names.json.
-
-    Supports either:
-        ["Battery", "Cardboard", ...]
-    or:
-        {"0": "Battery", "1": "Cardboard", ...}
-    """
-
-    if not CLASS_NAMES_PATH.exists():
-        raise FileNotFoundError(
-            f"Class names file not found:\n{CLASS_NAMES_PATH}"
-        )
-
-    with open(CLASS_NAMES_PATH, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
+def normalize_mapping(data):
     if isinstance(data, list):
-        return data
-
-    if isinstance(data, dict):
-        # Handle {"0": "Battery", ...}
-        return [
-            data[str(i)] if str(i) in data else data[i]
-            for i in range(len(data))
-        ]
-
-    raise ValueError(
-        "Unsupported class_names.json format."
-    )
-
-
-# ============================================================
-# LOAD CLASS-TO-INDEX
-# ============================================================
-
-def load_class_to_idx():
-    """
-    Load class-to-index mapping if available.
-    """
-
-    if not CLASS_TO_IDX_PATH.exists():
+        return {i: str(v) for i, v in enumerate(data)}
+    if not isinstance(data, dict):
         return None
 
-    with open(CLASS_TO_IDX_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+    if isinstance(data.get("classes"), list):
+        return {i: str(v) for i, v in enumerate(data["classes"])}
+
+    if isinstance(data.get("idx_to_class"), dict):
+        return {int(k): str(v) for k, v in data["idx_to_class"].items()}
+
+    if isinstance(data.get("class_to_idx"), dict):
+        return {int(v): str(k) for k, v in data["class_to_idx"].items()}
+
+    if all(str(k).isdigit() for k in data):
+        return {int(k): str(v) for k, v in data.items()}
+
+    return None
 
 
-# ============================================================
-# CREATE MODEL
-# ============================================================
-
-def create_model(num_classes):
-    """
-    Create EfficientNet-B0 architecture matching training.
-    """
-
+def build_model(num_classes):
     model = models.efficientnet_b0(weights=None)
-
-    in_features = model.classifier[1].in_features
-
-    model.classifier[1] = torch.nn.Linear(
-        in_features,
-        num_classes
+    model.classifier[1] = nn.Linear(
+        model.classifier[1].in_features,
+        num_classes,
     )
-
     return model
 
 
-# ============================================================
-# LOAD MODEL
-# ============================================================
+def load_class_names(checkpoint):
+    # The checkpoint created by the training pipeline contains idx_to_class.
+    for key in ("idx_to_class", "class_names"):
+        if key in checkpoint:
+            mapping = normalize_mapping(checkpoint[key])
+            if mapping:
+                return mapping
 
-def load_model():
-    """
-    Load the trained EfficientNet-B0 model.
-    """
+    candidates = [
+        MODEL_DIR / "class_names.json",
+        ROOT / "models" / "class_names.json",
+        MODEL_DIR / "class_to_idx.json",
+        ROOT / "models" / "class_to_idx.json",
+    ]
 
-    class_names = load_class_names()
+    for path in candidates:
+        if path.exists():
+            with open(path, "r", encoding="utf-8") as f:
+                mapping = normalize_mapping(json.load(f))
+            if mapping:
+                return mapping
 
+    raise FileNotFoundError(
+        "No usable class mapping found. Checked checkpoint and: "
+        + ", ".join(str(p) for p in candidates)
+    )
+
+
+def load_model(device):
     if not MODEL_PATH.exists():
         raise FileNotFoundError(
-            f"Model file not found:\n{MODEL_PATH}"
+            f"Model not found:\n{MODEL_PATH}"
         )
-
-    model = create_model(len(class_names))
 
     checkpoint = torch.load(
         MODEL_PATH,
-        map_location=DEVICE,
-        weights_only=False
+        map_location=device,
+        weights_only=False,
     )
 
-    # --------------------------------------------------------
-    # Support several checkpoint formats
-    # --------------------------------------------------------
+    architecture = str(
+        checkpoint.get("architecture", "efficientnet_b0")
+    ).lower()
 
-    if isinstance(checkpoint, dict):
+    if architecture != "efficientnet_b0":
+        raise ValueError(
+            f"Expected efficientnet_b0, got {architecture}"
+        )
 
-        if "model_state_dict" in checkpoint:
-            state_dict = checkpoint["model_state_dict"]
+    num_classes = int(checkpoint.get("num_classes", 16))
+    image_size = int(checkpoint.get("image_size", 224))
 
-        elif "state_dict" in checkpoint:
-            state_dict = checkpoint["state_dict"]
-
-        elif "model" in checkpoint:
-            state_dict = checkpoint["model"]
-
-        else:
-            # Could already be a raw state_dict
-            state_dict = checkpoint
-
-    else:
-        state_dict = checkpoint
-
-    # Remove possible "module." prefix
-    cleaned_state_dict = {}
-
-    for key, value in state_dict.items():
-        if key.startswith("module."):
-            key = key[7:]
-
-        cleaned_state_dict[key] = value
-
-    model.load_state_dict(
-        cleaned_state_dict,
-        strict=True
-    )
-
-    model.to(DEVICE)
+    model = build_model(num_classes)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    model.to(device)
     model.eval()
 
-    return model, class_names
+    class_names = load_class_names(checkpoint)
+
+    return model, class_names, image_size
 
 
-# ============================================================
-# GLOBAL MODEL CACHE
-# ============================================================
-
-_MODEL = None
-_CLASS_NAMES = None
-
-
-def get_model():
-    """
-    Load the model only once.
-
-    This is important for the application because we don't
-    want to reload the 128 MB model for every image.
-    """
-
-    global _MODEL
-    global _CLASS_NAMES
-
-    if _MODEL is None:
-        _MODEL, _CLASS_NAMES = load_model()
-
-    return _MODEL, _CLASS_NAMES
-
-
-# ============================================================
-# PREDICT IMAGE
-# ============================================================
-
-def predict_image(
-    image_path,
-    top_k=3
-):
-    """
-    Predict waste class from an image.
-
-    Parameters
-    ----------
-    image_path : str or Path
-        Path to input image.
-
-    top_k : int
-        Number of top predictions to return.
-
-    Returns
-    -------
-    dict
-        Prediction result.
-    """
-
+def predict(model, image_path, class_names, image_size, device, top_k):
     image_path = Path(image_path)
 
     if not image_path.exists():
@@ -259,186 +120,100 @@ def predict_image(
             f"Image not found:\n{image_path}"
         )
 
-    model, class_names = get_model()
+    image = Image.open(image_path).convert("RGB")
 
-    # --------------------------------------------------------
-    # Open image
-    # --------------------------------------------------------
+    transform = transforms.Compose([
+        transforms.Resize((image_size, image_size)),
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225],
+        ),
+    ])
 
-    try:
-        image = Image.open(image_path).convert("RGB")
-    except Exception as e:
-        raise ValueError(
-            f"Could not read image:\n{image_path}\n\n{e}"
-        )
-
-    # --------------------------------------------------------
-    # Preprocess
-    # --------------------------------------------------------
-
-    tensor = TRANSFORM(image)
-
-    # Add batch dimension
-    tensor = tensor.unsqueeze(0)
-
-    tensor = tensor.to(DEVICE)
-
-    # --------------------------------------------------------
-    # Inference
-    # --------------------------------------------------------
+    tensor = transform(image).unsqueeze(0).to(
+        device, non_blocking=True
+    )
 
     with torch.inference_mode():
+        probabilities = torch.softmax(model(tensor), dim=1)[0]
 
-        logits = model(tensor)
+    k = min(max(1, top_k), probabilities.numel())
+    values, indices = torch.topk(probabilities, k=k)
 
-        probabilities = F.softmax(
-            logits,
-            dim=1
-        )[0]
+    results = []
+    for value, index in zip(values.cpu().tolist(), indices.cpu().tolist()):
+        index = int(index)
+        results.append((
+            class_names.get(index, f"Unknown Class {index}"),
+            float(value),
+        ))
 
-    # --------------------------------------------------------
-    # Top-K predictions
-    # --------------------------------------------------------
+    return results
 
-    top_k = min(
-        top_k,
-        len(class_names)
-    )
-
-    values, indices = torch.topk(
-        probabilities,
-        k=top_k
-    )
-
-    predictions = []
-
-    for probability, index in zip(
-        values,
-        indices
-    ):
-
-        class_index = int(index.item())
-
-        predictions.append({
-            "class_id": class_index,
-            "class_name": class_names[class_index],
-            "confidence": float(probability.item()),
-            "confidence_percent": round(
-                float(probability.item()) * 100,
-                2
-            )
-        })
-
-    # --------------------------------------------------------
-    # Main prediction
-    # --------------------------------------------------------
-
-    best = predictions[0]
-
-    result = {
-        "image": str(image_path),
-        "predicted_class": best["class_name"],
-        "class_id": best["class_id"],
-        "confidence": best["confidence"],
-        "confidence_percent": best["confidence_percent"],
-        "top_predictions": predictions,
-        "device": str(DEVICE),
-        "model": "efficientnet_b0",
-    }
-
-    return result
-
-
-# ============================================================
-# PRINT RESULT
-# ============================================================
-
-def print_prediction(result):
-
-    print()
-    print("=" * 60)
-    print("SMART WASTE SEGREGATION AI")
-    print("=" * 60)
-
-    print(f"Image      : {result['image']}")
-    print(f"Model      : {result['model']}")
-    print(f"Device     : {result['device']}")
-
-    print()
-    print("PREDICTION")
-    print("-" * 60)
-
-    print(
-        f"Class      : {result['predicted_class']}"
-    )
-
-    print(
-        f"Confidence : "
-        f"{result['confidence_percent']:.2f}%"
-    )
-
-    print()
-    print("TOP PREDICTIONS")
-    print("-" * 60)
-
-    for i, prediction in enumerate(
-        result["top_predictions"],
-        start=1
-    ):
-
-        print(
-            f"{i}. "
-            f"{prediction['class_name']:<30} "
-            f"{prediction['confidence_percent']:>6.2f}%"
-        )
-
-    print("=" * 60)
-    print()
-
-
-# ============================================================
-# COMMAND LINE INTERFACE
-# ============================================================
 
 def main():
-
-    if len(sys.argv) < 2:
-
-        print()
-        print("Usage:")
-        print(
-            "  python ml/interface.py "
-            "path/to/image.jpg"
-        )
-        print()
-
-        return
-
-    image_path = sys.argv[1]
+    parser = argparse.ArgumentParser(
+        description="Run the trained EfficientNet-B0 waste classifier."
+    )
+    parser.add_argument("image", help="Path to image")
+    parser.add_argument("--top-k", type=int, default=3)
+    args = parser.parse_args()
 
     try:
-
-        result = predict_image(
-            image_path,
-            top_k=3
+        device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
         )
 
-        print_prediction(result)
+        model, class_names, image_size = load_model(device)
 
-    except Exception as e:
+        results = predict(
+            model,
+            args.image,
+            class_names,
+            image_size,
+            device,
+            args.top_k,
+        )
 
+        best_class, best_confidence = results[0]
+
+        print()
+        print("=" * 60)
+        print("SMART WASTE SEGREGATION AI")
+        print("=" * 60)
+        print(f"Image      : {args.image}")
+        print("Model      : efficientnet_b0")
+        print(f"Device     : {device}")
+
+        if device.type == "cuda":
+            print(f"GPU        : {torch.cuda.get_device_name(0)}")
+
+        print()
+        print("PREDICTION")
+        print("-" * 60)
+        print(f"Class      : {best_class}")
+        print(f"Confidence : {best_confidence * 100:.2f}%")
+
+        print()
+        print("TOP PREDICTIONS")
+        print("-" * 60)
+
+        for rank, (name, confidence) in enumerate(results, 1):
+            print(f"{rank}. {name:<30} {confidence * 100:6.2f}%")
+
+        print("=" * 60)
+
+    except Exception as exc:
+        import traceback
         print()
         print("ERROR")
         print("-" * 60)
-        print(str(e))
-        print()
+        print(f"{type(exc).__name__}: {exc}")
+        print("-" * 60)
+        traceback.print_exc()
+        raise SystemExit(1)
 
-        sys.exit(1)
-
-
-# ============================================================
-# ENTRY POINT
-# ============================================================
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,41 @@
+{
+  "image": "C:\\Users\\trish\\Desktop\\smart-waste-segregation-ai\\web_uploads\\d217e0925be34a47bdd912959459873f.jpeg",
+  "model": "efficientnet_b0",
+  "device": "cpu",
+  "quality": {
+    "status": "OK",
+    "message": "Image is readable.",
+    "width": 1170,
+    "height": 748
+  },
+  "prediction": "Residual",
+  "confidence": 0.8383476734161377,
+  "confidence_percent": 83.83,
+  "top_predictions": [
+    {
+      "class": "Residual",
+      "confidence": 0.8383476734161377,
+      "confidence_percent": 83.83,
+      "class_index": 13
+    },
+    {
+      "class": "Organic Stream",
+      "confidence": 0.07303692400455475,
+      "confidence_percent": 7.3,
+      "class_index": 9
+    },
+    {
+      "class": "Hazardous Waste",
+      "confidence": 0.028181951493024826,
+      "confidence_percent": 2.82,
+      "class_index": 6
+    }
+  ],
+  "why_this_result": "The model classified the image as 'Residual' with 83.83% confidence. The model has relatively high confidence in this prediction. The Grad-CAM heatmap highlights regions of the image that contributed most strongly to the prediction.",
+  "grad_cam": {
+    "status": "SUCCESS",
+    "message": "Grad-CAM completed, but output path could not be detected.",
+    "path": null
+  },
+  "recycling_guidance": "This item appears to belong to residual/general waste. Do not place it with recyclable materials unless local guidelines specifically allow it."
+}

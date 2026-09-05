@@ -1,0 +1,41 @@
+{
+  "image": "C:\\Users\\trish\\Desktop\\smart-waste-segregation-ai\\data\\raw\\realwaste\\Plastic\\Plastic_821.jpg",
+  "model": "efficientnet_b0",
+  "device": "cpu",
+  "quality": {
+    "status": "OK",
+    "message": "Image is readable.",
+    "width": 524,
+    "height": 524
+  },
+  "prediction": "Plastic",
+  "confidence": 0.9689570665359497,
+  "confidence_percent": 96.9,
+  "top_predictions": [
+    {
+      "class": "Plastic",
+      "confidence": 0.9689570665359497,
+      "confidence_percent": 96.9,
+      "class_index": 11
+    },
+    {
+      "class": "Metal",
+      "confidence": 0.004742526914924383,
+      "confidence_percent": 0.47,
+      "class_index": 8
+    },
+    {
+      "class": "Recyclable Stream",
+      "confidence": 0.0036120694130659103,
+      "confidence_percent": 0.36,
+      "class_index": 12
+    }
+  ],
+  "why_this_result": "The model classified the image as 'Plastic' with 96.90% confidence. The model is highly confident in this prediction. The Grad-CAM heatmap highlights regions of the image that contributed most strongly to the prediction.",
+  "grad_cam": {
+    "status": "SUCCESS",
+    "message": "Grad-CAM completed, but output path could not be detected.",
+    "path": null
+  },
+  "recycling_guidance": "Empty and rinse the plastic item when appropriate, then place it in the designated plastic recycling stream. Follow your local recycling rules."
+}

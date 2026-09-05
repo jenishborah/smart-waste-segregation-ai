@@ -1,0 +1,5 @@
+dataset,total_images,valid_images,corrupt_images,small_images,number_of_classes
+trashnet,2527,2527,0,0,6
+realwaste,4752,4752,0,0,9
+phenomsg,2917,2917,0,0,18
+ewaste,3000,3000,0,0,10

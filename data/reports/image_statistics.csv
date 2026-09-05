@@ -1,0 +1,5 @@
+dataset,min_width,max_width,mean_width,median_width,min_height,max_height,mean_height,median_height,min_aspect_ratio,max_aspect_ratio,mean_aspect_ratio
+trashnet,3264,4032,3921.37,4032,2448,3024,2941.03,3024,1.3333,1.3333,1.3333
+realwaste,524,524,524,524.0,524,524,524,524.0,1.0,1.0,1.0
+phenomsg,200,7800,1200.37,1024,128,6286,913.05,736,0.2719,5.4839,1.4211
+ewaste,150,150,150,150.0,150,150,150,150.0,1.0,1.0,1.0

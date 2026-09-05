@@ -1,0 +1,49 @@
+split,unified_parent,unified_class,image_count
+test,E-Waste,Electronic Component,37
+test,E-Waste,Electronic Device,238
+test,E-Waste,Large Electronic Appliance,147
+test,Hazardous,Hazardous Waste,55
+test,Organic,Food Organics,68
+test,Organic,Organic Stream,124
+test,Organic,Vegetation,71
+test,Recyclable,Cardboard,133
+test,Recyclable,Glass,141
+test,Recyclable,Metal,202
+test,Recyclable,Paper,175
+test,Recyclable,Plastic,213
+test,Recyclable,Recyclable Stream,94
+test,Recyclable,Textile,64
+test,Residual,Residual,172
+test,Special,Battery,45
+train,E-Waste,Electronic Component,216
+train,E-Waste,Electronic Device,1065
+train,E-Waste,Large Electronic Appliance,625
+train,Hazardous,Hazardous Waste,819
+train,Organic,Food Organics,278
+train,Organic,Organic Stream,433
+train,Organic,Vegetation,303
+train,Recyclable,Cardboard,588
+train,Recyclable,Glass,628
+train,Recyclable,Metal,799
+train,Recyclable,Paper,747
+train,Recyclable,Plastic,969
+train,Recyclable,Recyclable Stream,455
+train,Recyclable,Textile,207
+train,Residual,Residual,886
+train,Special,Battery,219
+val,E-Waste,Electronic Component,47
+val,E-Waste,Electronic Device,197
+val,E-Waste,Large Electronic Appliance,128
+val,Hazardous,Hazardous Waste,65
+val,Organic,Food Organics,65
+val,Organic,Organic Stream,117
+val,Organic,Vegetation,62
+val,Recyclable,Cardboard,143
+val,Recyclable,Glass,152
+val,Recyclable,Metal,199
+val,Recyclable,Paper,172
+val,Recyclable,Plastic,221
+val,Recyclable,Recyclable Stream,110
+val,Recyclable,Textile,47
+val,Residual,Residual,219
+val,Special,Battery,36

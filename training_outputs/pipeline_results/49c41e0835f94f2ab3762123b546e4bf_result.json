@@ -1,0 +1,41 @@
+{
+  "image": "C:\\Users\\trish\\Desktop\\smart-waste-segregation-ai\\data\\web_uploads\\49c41e0835f94f2ab3762123b546e4bf.jpg",
+  "model": "efficientnet_b0",
+  "device": "cpu",
+  "quality": {
+    "status": "OK",
+    "message": "Image is readable.",
+    "width": 1200,
+    "height": 733
+  },
+  "prediction": "Hazardous Waste",
+  "confidence": 0.9836350679397583,
+  "confidence_percent": 98.36,
+  "top_predictions": [
+    {
+      "class": "Hazardous Waste",
+      "confidence": 0.9836350679397583,
+      "confidence_percent": 98.36,
+      "class_index": 6
+    },
+    {
+      "class": "Recyclable Stream",
+      "confidence": 0.008249211125075817,
+      "confidence_percent": 0.82,
+      "class_index": 12
+    },
+    {
+      "class": "Organic Stream",
+      "confidence": 0.0027041735593229532,
+      "confidence_percent": 0.27,
+      "class_index": 9
+    }
+  ],
+  "why_this_result": "The model classified the image as 'Hazardous Waste' with 98.36% confidence. The model is highly confident in this prediction. The Grad-CAM heatmap highlights regions of the image that contributed most strongly to the prediction.",
+  "grad_cam": {
+    "status": "SUCCESS",
+    "message": "Grad-CAM completed, but output path could not be detected.",
+    "path": null
+  },
+  "recycling_guidance": "Do not place hazardous waste in regular recycling or household waste. Keep it separate and use an appropriate hazardous-waste collection facility."
+}

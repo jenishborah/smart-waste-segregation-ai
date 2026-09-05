@@ -1,0 +1,9 @@
+metric,value
+total_images_scanned,13196
+exact_duplicate_groups,320
+images_in_exact_duplicate_groups,644
+cross_dataset_exact_duplicate_groups,0
+strong_near_duplicate_pairs,546
+cross_dataset_strong_near_duplicates,11
+review_similarity_pairs,587
+cross_dataset_review_pairs,197

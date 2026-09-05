@@ -1,0 +1,41 @@
+{
+  "image": "C:\\Users\\trish\\Desktop\\smart-waste-segregation-ai\\web_uploads\\upload_873d38e23f.jpg",
+  "model": "efficientnet_b0",
+  "device": "cpu",
+  "quality": {
+    "status": "OK",
+    "message": "Image is readable.",
+    "width": 1500,
+    "height": 1099
+  },
+  "prediction": "Organic Stream",
+  "confidence": 0.9738943576812744,
+  "confidence_percent": 97.39,
+  "top_predictions": [
+    {
+      "class": "Organic Stream",
+      "confidence": 0.9738943576812744,
+      "confidence_percent": 97.39,
+      "class_index": 9
+    },
+    {
+      "class": "Electronic Device",
+      "confidence": 0.0035996052902191877,
+      "confidence_percent": 0.36,
+      "class_index": 3
+    },
+    {
+      "class": "Food Organics",
+      "confidence": 0.003301797667518258,
+      "confidence_percent": 0.33,
+      "class_index": 4
+    }
+  ],
+  "why_this_result": "The model classified the image as 'Organic Stream' with 97.39% confidence. The model is highly confident in this prediction. The Grad-CAM heatmap highlights regions of the image that contributed most strongly to the prediction.",
+  "grad_cam": {
+    "status": "SUCCESS",
+    "message": "Grad-CAM completed, but output path could not be detected.",
+    "path": null
+  },
+  "recycling_guidance": "Place suitable organic material in the designated organic waste or composting stream."
+}

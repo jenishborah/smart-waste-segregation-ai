@@ -1,0 +1,36 @@
+leakage_group,image_count,class_count,classes,images
+GROUP_04958,6,4,Food Organics | Metal | Plastic | Residual,realwaste/Food Organics/Food Organics_202.jpg | realwaste/Metal/Metal_546.jpg | realwaste/Miscellaneous Trash/Miscellaneous Trash_401.jpg | realwaste/Miscellaneous Trash/Miscellaneous Trash_70.jpg | trashnet/plastic/plastic153.jpg | trashnet/plastic/plastic9.jpg
+GROUP_02317,7,3,Large Electronic Appliance | Metal | Plastic,ewaste/train/Washing Machine/Washing_Machine_9.jpg | realwaste/Plastic/Plastic_216.jpg | realwaste/Plastic/Plastic_218.jpg | realwaste/Plastic/Plastic_221.jpg | realwaste/Plastic/Plastic_230.jpg | trashnet/metal/metal155.jpg | trashnet/metal/metal6.jpg
+GROUP_02096,3,3,Glass | Metal | Plastic,trashnet/glass/glass127.jpg | trashnet/metal/metal159.jpg | trashnet/plastic/plastic11.jpg
+GROUP_05989,3,3,Food Organics | Glass | Metal,realwaste/Food Organics/Food Organics_150.jpg | realwaste/Glass/Glass_294.jpg | realwaste/Metal/Metal_326.jpg
+GROUP_00024,4,2,Metal | Plastic,realwaste/Metal/Metal_738.jpg | realwaste/Plastic/Plastic_186.jpg | realwaste/Plastic/Plastic_204.jpg | realwaste/Plastic/Plastic_763.jpg
+GROUP_00160,4,2,Metal | Plastic,trashnet/metal/metal149.jpg | trashnet/metal/metal9.jpg | trashnet/plastic/plastic135.jpg | trashnet/plastic/plastic138.jpg
+GROUP_03120,4,2,Plastic | Residual,realwaste/Miscellaneous Trash/Miscellaneous Trash_114.jpg | realwaste/Miscellaneous Trash/Miscellaneous Trash_28.jpg | realwaste/Plastic/Plastic_85.jpg | trashnet/trash/trash128.jpg
+GROUP_00211,3,2,Plastic | Residual,realwaste/Miscellaneous Trash/Miscellaneous Trash_170.jpg | trashnet/plastic/plastic131.jpg | trashnet/trash/trash127.jpg
+GROUP_00728,3,2,Hazardous Waste | Organic Stream,phenomsg/Hazardous/Hazardous/e-waste/archives-ewaste-one_one - Copy.jpg | phenomsg/Hazardous/Hazardous/e-waste/archives-ewaste-one_one.jpg | phenomsg/Organic/Organic/kitchen_waste/archives-ewaste-one_one.jpg
+GROUP_00132,2,2,Metal | Plastic,realwaste/Metal/Metal_519.jpg | realwaste/Plastic/Plastic_542.jpg
+GROUP_00380,2,2,Food Organics | Residual,realwaste/Food Organics/Food Organics_210.jpg | realwaste/Miscellaneous Trash/Miscellaneous Trash_106.jpg
+GROUP_00528,2,2,Battery | Electronic Device,ewaste/train/Battery/battery_85.jpg | ewaste/val/Player/Player_34.jpg
+GROUP_00941,2,2,Plastic | Textile,realwaste/Plastic/Plastic_234.jpg | realwaste/Textile Trash/Textile Trash_213.jpg
+GROUP_01257,2,2,Cardboard | Metal,realwaste/Cardboard/Cardboard_132.jpg | realwaste/Metal/Metal_559.jpg
+GROUP_02068,2,2,Recyclable Stream | Residual,phenomsg/Non-Recyclable/Non-Recyclable/ceramic_product/recycled-glass.jpg | phenomsg/Recyclable/Recyclable/glass_containers/recycled-glass.jpg
+GROUP_02137,2,2,Metal | Textile,realwaste/Metal/Metal_127.jpg | realwaste/Textile Trash/Textile Trash_219.jpg
+GROUP_02428,2,2,Recyclable Stream | Residual,phenomsg/Non-Recyclable/Non-Recyclable/ceramic_product/09928-cover-opener.jpg | phenomsg/Recyclable/Recyclable/glass_containers/09928-cover-opener.jpg
+GROUP_02614,2,2,Metal | Plastic,realwaste/Metal/Metal_410.jpg | realwaste/Plastic/Plastic_127.jpg
+GROUP_02740,2,2,Metal | Plastic,trashnet/metal/metal154.jpg | trashnet/plastic/plastic10.jpg
+GROUP_03274,2,2,Recyclable Stream | Residual,phenomsg/Non-Recyclable/Non-Recyclable/stroform_product/200114-compostable-packaging-cups-utensils-plates.pla-plastic-waste-pollution-3-salad.jpg | phenomsg/Recyclable/Recyclable/cans_all_type/200114-compostable-packaging-cups-utensils-plates.pla-plastic-waste-pollution-3-salad.jpg
+GROUP_04211,2,2,Recyclable Stream | Residual,phenomsg/Non-Recyclable/Non-Recyclable/stroform_product/SS-KH_ShippingGuideTypesOfProtectivePackaging_KH-HRO.jpg | phenomsg/Recyclable/Recyclable/paper_products/1610468941921.jpg
+GROUP_04566,2,2,Food Organics | Metal,realwaste/Food Organics/Food Organics_45.jpg | realwaste/Metal/Metal_31.jpg
+GROUP_05221,2,2,Plastic | Residual,realwaste/Miscellaneous Trash/Miscellaneous Trash_129.jpg | realwaste/Plastic/Plastic_634.jpg
+GROUP_05264,2,2,Cardboard | Residual,realwaste/Cardboard/Cardboard_83.jpg | realwaste/Miscellaneous Trash/Miscellaneous Trash_119.jpg
+GROUP_05397,2,2,Metal | Plastic,realwaste/Metal/Metal_435.jpg | realwaste/Plastic/Plastic_100.jpg
+GROUP_05848,2,2,Electronic Device | Food Organics,ewaste/train/Mouse/Mouse_240.jpg | realwaste/Food Organics/Food Organics_36.jpg
+GROUP_06200,2,2,Glass | Plastic,trashnet/glass/glass176.jpg | trashnet/plastic/plastic152.jpg
+GROUP_06340,2,2,Battery | Electronic Device,ewaste/test/Battery/battery_148.jpg | ewaste/train/Keyboard/Keyboard_82.jpg
+GROUP_06456,2,2,Hazardous Waste | Plastic,phenomsg/Hazardous/Hazardous/paints/Paint-Solvents-and-Thinners.jpg | realwaste/Plastic/Plastic_781.jpg
+GROUP_07188,2,2,Plastic | Residual,trashnet/plastic/plastic481.jpg | trashnet/trash/trash133.jpg
+GROUP_07619,2,2,Glass | Plastic,trashnet/glass/glass389.jpg | trashnet/plastic/plastic332.jpg
+GROUP_07912,2,2,Glass | Metal,realwaste/Metal/Metal_616.jpg | trashnet/glass/glass96.jpg
+GROUP_08832,2,2,Glass | Metal,trashnet/glass/glass115.jpg | trashnet/metal/metal91.jpg
+GROUP_10352,2,2,Recyclable Stream | Residual,phenomsg/Non-Recyclable/Non-Recyclable/ceramic_product/Beer_bottles_2018_G1.jpg | phenomsg/Recyclable/Recyclable/glass_containers/800px-Beer_bottles_2018_G1.jpg
+GROUP_11677,2,2,Recyclable Stream | Residual,phenomsg/Non-Recyclable/Non-Recyclable/stroform_product/the-drive-toward-sustainability-5050-1536x1536.jpg | phenomsg/Recyclable/Recyclable/paper_products/the-drive-toward-sustainability-5050-1536x1536.jpg

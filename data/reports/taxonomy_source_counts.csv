@@ -1,0 +1,30 @@
+dataset,original_class,image_count,percentage_within_dataset
+ewaste,Battery,300,10.0
+ewaste,Keyboard,300,10.0
+ewaste,Microwave,300,10.0
+ewaste,Mobile,300,10.0
+ewaste,Mouse,300,10.0
+ewaste,PCB,300,10.0
+ewaste,Player,300,10.0
+ewaste,Printer,300,10.0
+ewaste,Television,300,10.0
+ewaste,Washing Machine,300,10.0
+phenomsg,Hazardous,939,32.19
+phenomsg,Non-Recyclable,645,22.11
+phenomsg,Organic,674,23.11
+phenomsg,Recyclable,659,22.59
+realwaste,Cardboard,461,9.7
+realwaste,Food Organics,411,8.65
+realwaste,Glass,420,8.84
+realwaste,Metal,790,16.62
+realwaste,Miscellaneous Trash,495,10.42
+realwaste,Paper,500,10.52
+realwaste,Plastic,921,19.38
+realwaste,Textile Trash,318,6.69
+realwaste,Vegetation,436,9.18
+trashnet,cardboard,403,15.95
+trashnet,glass,501,19.83
+trashnet,metal,410,16.22
+trashnet,paper,594,23.51
+trashnet,plastic,482,19.07
+trashnet,trash,137,5.42

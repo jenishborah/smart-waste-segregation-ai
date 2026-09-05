@@ -1,0 +1,36 @@
+leakage_group,decision,reason,action,keep_class,exclude_class
+GROUP_00024,LEGITIMATE_DIFFERENCE,Different physical objects: metal items and plastic items; visual similarity is not a label conflict.,KEEP,,
+GROUP_00132,LEGITIMATE_DIFFERENCE,A metal container and a plastic bottle are distinct objects/materials.,KEEP,,
+GROUP_00160,LEGITIMATE_DIFFERENCE,Metal cans and plastic bottles are visually similar in the dataset but are genuinely different material classes.,KEEP,,
+GROUP_00211,LEGITIMATE_DIFFERENCE,The residual objects and plastic item are different physical objects; no duplicated visual content.,KEEP,,
+GROUP_00380,LEGITIMATE_DIFFERENCE,"Food/organic material and residual material are distinct examples, not the same image.",KEEP,,
+GROUP_00528,LEGITIMATE_DIFFERENCE,Battery and electronic device are different object types and should remain separate.,KEEP,,
+GROUP_00728,ANNOTATION_ERROR,The same e-waste image is duplicated in Hazardous Waste and Organic Stream.,CORRECT_DUPLICATE_LABEL,Hazardous Waste,Organic Stream
+GROUP_00941,LEGITIMATE_DIFFERENCE,Plastic and textile examples are different objects despite similar image composition.,KEEP,,
+GROUP_01257,LEGITIMATE_DIFFERENCE,Cardboard and metal examples are clearly different objects.,KEEP,,
+GROUP_02068,ANNOTATION_ERROR,The exact same recycled-glass image appears under Residual and Recyclable Stream.,CORRECT_DUPLICATE_LABEL,Recyclable Stream,Residual
+GROUP_02096,LEGITIMATE_DIFFERENCE,"Glass, metal and plastic examples are different objects/materials.",KEEP,,
+GROUP_02137,LEGITIMATE_DIFFERENCE,The metal and plastic examples are distinct objects.,KEEP,,
+GROUP_02317,LEGITIMATE_DIFFERENCE,"The group contains different objects/classes, including a washing machine and separate plastic/metal examples.",KEEP,,
+GROUP_02428,ANNOTATION_ERROR,The exact same recycling-facility image appears under Residual and Recyclable Stream.,CORRECT_DUPLICATE_LABEL,Recyclable Stream,Residual
+GROUP_02614,LEGITIMATE_DIFFERENCE,The metal and plastic examples are different physical objects.,KEEP,,
+GROUP_02740,LEGITIMATE_DIFFERENCE,Metal and plastic examples are different objects.,KEEP,,
+GROUP_03120,LEGITIMATE_DIFFERENCE,"Food-organic, glass and metal examples are different objects/materials.",KEEP,,
+GROUP_03274,ANNOTATION_ERROR,The exact same compostable-packaging image is duplicated under Residual and Recyclable Stream.,CORRECT_DUPLICATE_LABEL,Recyclable Stream,Residual
+GROUP_04211,ANNOTATION_ERROR,The exact same cardboard/shipping-material image appears under Residual and Recyclable Stream.,CORRECT_DUPLICATE_LABEL,Recyclable Stream,Residual
+GROUP_04566,LEGITIMATE_DIFFERENCE,Metal and plastic examples are different physical objects.,KEEP,,
+GROUP_04958,LEGITIMATE_DIFFERENCE,"The group contains distinct food-organic, metal, residual and plastic objects; similarity is not sufficient to call a label conflict.",KEEP,,
+GROUP_05221,LEGITIMATE_DIFFERENCE,Residual and plastic examples are distinct objects.,KEEP,,
+GROUP_05264,LEGITIMATE_DIFFERENCE,Cardboard and residual examples are distinct objects.,KEEP,,
+GROUP_05397,LEGITIMATE_DIFFERENCE,A metal object and a plastic object are clearly different examples.,KEEP,,
+GROUP_05848,LEGITIMATE_DIFFERENCE,"The food-organic, glass and metal examples are distinct physical objects.",KEEP,,
+GROUP_05989,LEGITIMATE_DIFFERENCE,"Food-organic, glass and metal examples are different objects/materials.",KEEP,,
+GROUP_06200,LEGITIMATE_DIFFERENCE,The examples are different physical objects; no exact visual duplication across labels.,KEEP,,
+GROUP_06340,LEGITIMATE_DIFFERENCE,Battery and electronic device are different object types.,KEEP,,
+GROUP_06456,LEGITIMATE_DIFFERENCE,Hazardous paint/solvent container and plastic item are distinct examples.,KEEP,,
+GROUP_07188,LEGITIMATE_DIFFERENCE,The plastic and residual examples are different objects.,KEEP,,
+GROUP_07619,ANNOTATION_ERROR,The exact same glass container image is duplicated under Glass and Plastic.,CORRECT_DUPLICATE_LABEL,Glass,Plastic
+GROUP_07912,LEGITIMATE_DIFFERENCE,The metal and glass examples are different objects.,KEEP,,
+GROUP_08832,ANNOTATION_ERROR,The exact same image is duplicated under Glass and Metal; the visible object is a glass container.,CORRECT_DUPLICATE_LABEL,Glass,Metal
+GROUP_10352,ANNOTATION_ERROR,The exact same glass-bottle image is duplicated under Residual and Recyclable Stream.,CORRECT_DUPLICATE_LABEL,Recyclable Stream,Residual
+GROUP_11677,ANNOTATION_ERROR,The exact same recycling-bin image is duplicated under Residual and Recyclable Stream; the image represents recyclable material.,CORRECT_DUPLICATE_LABEL,Recyclable Stream,Residual

@@ -1,0 +1,41 @@
+{
+  "image": "C:\\Users\\trish\\Desktop\\smart-waste-segregation-ai\\web_uploads\\08dca242a54d4124a07c9c384879207c.jpg",
+  "model": "efficientnet_b0",
+  "device": "cpu",
+  "quality": {
+    "status": "OK",
+    "message": "Image is readable.",
+    "width": 524,
+    "height": 524
+  },
+  "prediction": "Metal",
+  "confidence": 0.9111982583999634,
+  "confidence_percent": 91.12,
+  "top_predictions": [
+    {
+      "class": "Metal",
+      "confidence": 0.9111982583999634,
+      "confidence_percent": 91.12,
+      "class_index": 8
+    },
+    {
+      "class": "Recyclable Stream",
+      "confidence": 0.02566167153418064,
+      "confidence_percent": 2.57,
+      "class_index": 12
+    },
+    {
+      "class": "Glass",
+      "confidence": 0.011942275799810886,
+      "confidence_percent": 1.19,
+      "class_index": 5
+    }
+  ],
+  "why_this_result": "The model classified the image as 'Metal' with 91.12% confidence. The model is highly confident in this prediction. The Grad-CAM heatmap highlights regions of the image that contributed most strongly to the prediction.",
+  "grad_cam": {
+    "status": "SUCCESS",
+    "message": "Grad-CAM completed, but output path could not be detected.",
+    "path": null
+  },
+  "recycling_guidance": "Separate metal from general waste. Clean the item when appropriate and place it in the designated metal recycling stream."
+}

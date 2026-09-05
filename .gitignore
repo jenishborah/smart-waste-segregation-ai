@@ -3,8 +3,7 @@ data/raw/
 data/processed/
 data/external/
 
-# Dataset reports
-data/reports/
+
 
 # Trained models
 models/

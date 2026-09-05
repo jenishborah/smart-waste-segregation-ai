@@ -1,0 +1,41 @@
+{
+  "image": "C:\\Users\\trish\\Desktop\\smart-waste-segregation-ai\\uploads\\web_1788637392672.jpg",
+  "model": "efficientnet_b0",
+  "device": "cpu",
+  "quality": {
+    "status": "OK",
+    "message": "Image is readable.",
+    "width": 576,
+    "height": 1024
+  },
+  "prediction": "Recyclable Stream",
+  "confidence": 0.9643979072570801,
+  "confidence_percent": 96.44,
+  "top_predictions": [
+    {
+      "class": "Recyclable Stream",
+      "confidence": 0.9643979072570801,
+      "confidence_percent": 96.44,
+      "class_index": 12
+    },
+    {
+      "class": "Hazardous Waste",
+      "confidence": 0.011478887870907784,
+      "confidence_percent": 1.15,
+      "class_index": 6
+    },
+    {
+      "class": "Residual",
+      "confidence": 0.004009254276752472,
+      "confidence_percent": 0.4,
+      "class_index": 13
+    }
+  ],
+  "why_this_result": "The model classified the image as 'Recyclable Stream' with 96.44% confidence. The model is highly confident in this prediction. The Grad-CAM heatmap highlights regions of the image that contributed most strongly to the prediction.",
+  "grad_cam": {
+    "status": "SUCCESS",
+    "message": "Grad-CAM completed, but output path could not be detected.",
+    "path": null
+  },
+  "recycling_guidance": "This item appears suitable for a recyclable stream. Keep it clean and dry and follow your local recycling rules."
+}

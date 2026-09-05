@@ -1,0 +1,130 @@
+{
+  "dataset": {
+    "name": "Waste Segregation AI Dataset V1",
+    "total_images": 13196,
+    "number_of_classes": 16,
+    "classes": [
+      "Battery",
+      "Cardboard",
+      "Electronic Component",
+      "Electronic Device",
+      "Food Organics",
+      "Glass",
+      "Hazardous Waste",
+      "Large Electronic Appliance",
+      "Metal",
+      "Organic Stream",
+      "Paper",
+      "Plastic",
+      "Recyclable Stream",
+      "Residual",
+      "Textile",
+      "Vegetation"
+    ]
+  },
+  "splits": {
+    "train": 9237,
+    "val": 1980,
+    "test": 1979,
+    "total": 13196
+  },
+  "class_distribution": {
+    "Electronic Device": 1500,
+    "Plastic": 1403,
+    "Residual": 1277,
+    "Metal": 1200,
+    "Paper": 1094,
+    "Hazardous Waste": 939,
+    "Glass": 921,
+    "Large Electronic Appliance": 900,
+    "Cardboard": 864,
+    "Organic Stream": 674,
+    "Recyclable Stream": 659,
+    "Vegetation": 436,
+    "Food Organics": 411,
+    "Textile": 318,
+    "Battery": 300,
+    "Electronic Component": 300
+  },
+  "leakage": {
+    "total_groups": 12686,
+    "groups_containing_multiple_images": 461,
+    "images_in_grouped_samples": 971,
+    "maximum_group_size": 7,
+    "groups_crossing_splits": 0
+  },
+  "duplicates": {
+    "exact_duplicate_images": 644,
+    "exact_duplicate_groups": 320,
+    "near_duplicate_images": 971,
+    "near_duplicate_pairs_or_groups": 546
+  },
+  "label_conflicts": {
+    "conflicting_groups": 35,
+    "conflict_distribution": {
+      "2": 31,
+      "3": 3,
+      "4": 1
+    },
+    "conflicting_group_names": [
+      "GROUP_00024",
+      "GROUP_00132",
+      "GROUP_00160",
+      "GROUP_00211",
+      "GROUP_00380",
+      "GROUP_00528",
+      "GROUP_00728",
+      "GROUP_00941",
+      "GROUP_01257",
+      "GROUP_02068",
+      "GROUP_02096",
+      "GROUP_02137",
+      "GROUP_02317",
+      "GROUP_02428",
+      "GROUP_02614",
+      "GROUP_02740",
+      "GROUP_03120",
+      "GROUP_03274",
+      "GROUP_04211",
+      "GROUP_04566",
+      "GROUP_04958",
+      "GROUP_05221",
+      "GROUP_05264",
+      "GROUP_05397",
+      "GROUP_05848",
+      "GROUP_05989",
+      "GROUP_06200",
+      "GROUP_06340",
+      "GROUP_06456",
+      "GROUP_07188",
+      "GROUP_07619",
+      "GROUP_07912",
+      "GROUP_08832",
+      "GROUP_10352",
+      "GROUP_11677"
+    ]
+  },
+  "files": {
+    "images_expected": 13196,
+    "images_found": 13196,
+    "images_missing": 0
+  },
+  "retention": {
+    "original_manifest_images": 13196,
+    "curated_images": 13196,
+    "images_excluded": 0,
+    "retention_rate_percent": 100.0
+  },
+  "validation": {
+    "required_columns": true,
+    "missing_required_values": true,
+    "duplicate_paths": true,
+    "cross_split_leakage": true,
+    "missing_images": true,
+    "all_classes_train": true,
+    "all_classes_val": true,
+    "all_classes_test": true,
+    "overall_integrity": true,
+    "label_conflicts_warning": true
+  }
+}

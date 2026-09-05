@@ -1,0 +1,30 @@
+dataset,original_class,source_count,unified_parent,unified_class,training_role,safety_level,disposal_group,mapping_confidence,mapping_reason
+ewaste,Battery,300,Special,Battery,safety_critical,S3,Battery Collection,HIGH,Battery is explicitly identifiable and requires special handling.
+ewaste,Keyboard,300,E-Waste,Electronic Device,e_waste,S2,E-Waste Collection,HIGH,Electronic peripheral.
+ewaste,Microwave,300,E-Waste,Large Electronic Appliance,e_waste,S2,E-Waste Collection,HIGH,Electrical appliance.
+ewaste,Mobile,300,E-Waste,Electronic Device,e_waste,S2,E-Waste Collection,HIGH,Electronic consumer device.
+ewaste,Mouse,300,E-Waste,Electronic Device,e_waste,S2,E-Waste Collection,HIGH,Electronic peripheral.
+ewaste,PCB,300,E-Waste,Electronic Component,e_waste,S2,E-Waste Collection,HIGH,Printed circuit board/electronic component.
+ewaste,Player,300,E-Waste,Electronic Device,e_waste,S2,E-Waste Collection,HIGH,Electronic media device.
+ewaste,Printer,300,E-Waste,Electronic Device,e_waste,S2,E-Waste Collection,HIGH,Electronic device.
+ewaste,Television,300,E-Waste,Large Electronic Appliance,e_waste,S2,E-Waste Collection,HIGH,Electrical/electronic appliance.
+ewaste,Washing Machine,300,E-Waste,Large Electronic Appliance,e_waste,S2,E-Waste Collection,HIGH,Large electrical appliance.
+phenomsg,Hazardous,939,Hazardous,Hazardous Waste,stream,S3,Hazardous Waste Collection,HIGH,Source dataset explicitly identifies hazardous waste.
+phenomsg,Non-Recyclable,645,Residual,Residual,stream,S0,Residual Waste,HIGH,Source dataset explicitly identifies non-recyclable waste.
+phenomsg,Organic,674,Organic,Organic Stream,stream,S0,Organic Waste,HIGH,Source label identifies the broad organic waste stream without specifying a material.
+phenomsg,Recyclable,659,Recyclable,Recyclable Stream,stream,S1,Recycling Stream,HIGH,Source label identifies recyclability but does not specify a material.
+realwaste,Cardboard,461,Recyclable,Cardboard,material,S1,Cardboard Recycling,HIGH,Direct material-level label.
+realwaste,Food Organics,411,Organic,Food Organics,organic,S0,Organic Waste,HIGH,Direct organic-waste label.
+realwaste,Glass,420,Recyclable,Glass,material,S1,Glass Recycling,HIGH,Direct material-level label.
+realwaste,Metal,790,Recyclable,Metal,material,S1,Metal Recycling,HIGH,Direct material-level label.
+realwaste,Miscellaneous Trash,495,Residual,Residual,residual,S0,Residual Waste,HIGH,Dataset explicitly identifies miscellaneous trash.
+realwaste,Paper,500,Recyclable,Paper,material,S1,Paper Recycling,HIGH,Direct material-level label.
+realwaste,Plastic,921,Recyclable,Plastic,material,S1,Plastic Recycling,HIGH,Direct material-level label.
+realwaste,Textile Trash,318,Recyclable,Textile,material,S1,Textile Recovery,HIGH,Direct textile-waste label.
+realwaste,Vegetation,436,Organic,Vegetation,organic,S0,Organic Waste,HIGH,Direct vegetation/organic label.
+trashnet,cardboard,403,Recyclable,Cardboard,material,S1,Cardboard Recycling,HIGH,Direct material-level label.
+trashnet,glass,501,Recyclable,Glass,material,S1,Glass Recycling,HIGH,Direct material-level label.
+trashnet,metal,410,Recyclable,Metal,material,S1,Metal Recycling,HIGH,Direct material-level label.
+trashnet,paper,594,Recyclable,Paper,material,S1,Paper Recycling,HIGH,Direct material-level label.
+trashnet,plastic,482,Recyclable,Plastic,material,S1,Plastic Recycling,HIGH,Direct material-level label.
+trashnet,trash,137,Residual,Residual,residual,S0,Residual Waste,MEDIUM,Generic TrashNet label; safest unified representation is residual waste.
