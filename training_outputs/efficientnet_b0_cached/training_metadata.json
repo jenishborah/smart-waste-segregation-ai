@@ -1,0 +1,23 @@
+{
+  "architecture": "efficientnet_b0",
+  "dataset": "dataset_v1_curated",
+  "num_classes": 16,
+  "image_size": 224,
+  "batch_size": 64,
+  "epochs_requested": 12,
+  "epochs_completed": 12,
+  "learning_rate": 0.0001,
+  "weight_decay": 0.0001,
+  "patience": 4,
+  "seed": 42,
+  "num_workers": 2,
+  "amp": true,
+  "device": "cuda",
+  "gpu": "Tesla T4",
+  "best_epoch": 10,
+  "best_validation_loss": 0.6239116637393681,
+  "best_validation_accuracy": 0.8974747474747474,
+  "test_accuracy": 0.8948964123294593,
+  "macro_f1": 0.8920495766882601,
+  "total_training_time_seconds": 710.073282957077
+}

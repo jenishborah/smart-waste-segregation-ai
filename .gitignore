@@ -29,3 +29,5 @@ env/
 .idea/
 
 .data/raw.zip
+
+.training_outputs/best_model.h5

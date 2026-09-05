@@ -1,0 +1,17 @@
+,Battery,Cardboard,Electronic Component,Electronic Device,Food Organics,Glass,Hazardous Waste,Large Electronic Appliance,Metal,Organic Stream,Paper,Plastic,Recyclable Stream,Residual,Textile,Vegetation
+Battery,43,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0
+Cardboard,0,117,0,0,0,0,0,0,1,0,11,2,0,2,0,0
+Electronic Component,0,0,36,1,0,0,0,0,0,0,0,0,0,0,0,0
+Electronic Device,1,0,0,236,0,0,0,1,0,0,0,0,0,0,0,0
+Food Organics,0,0,0,0,65,0,0,0,0,0,0,0,0,1,0,2
+Glass,0,0,0,0,0,136,0,0,0,0,0,5,0,0,0,0
+Hazardous Waste,1,0,0,0,0,0,40,0,0,2,1,0,3,8,0,0
+Large Electronic Appliance,0,0,0,2,0,0,0,145,0,0,0,0,0,0,0,0
+Metal,0,1,0,0,0,2,0,0,187,0,0,8,0,4,0,0
+Organic Stream,0,0,0,1,0,0,8,0,0,97,1,0,3,13,0,1
+Paper,0,5,0,0,0,2,0,0,1,0,159,2,0,5,1,0
+Plastic,0,3,0,0,0,6,0,0,8,0,2,190,0,4,0,0
+Recyclable Stream,0,0,0,0,0,1,6,0,1,4,0,0,76,6,0,0
+Residual,0,2,0,0,1,0,14,0,3,3,4,7,13,118,6,1
+Textile,0,0,0,0,0,0,0,0,1,0,2,0,0,5,56,0
+Vegetation,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,70

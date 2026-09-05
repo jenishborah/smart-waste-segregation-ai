@@ -1,0 +1,12 @@
+{
+  "architecture": "efficientnet_b0",
+  "test_images": 1979,
+  "test_loss": 0.6294726887515484,
+  "test_accuracy": 0.8948964123294593,
+  "macro_precision": 0.8922824540075007,
+  "macro_recall": 0.8936235343752972,
+  "macro_f1": 0.8920495766882601,
+  "best_epoch": 10,
+  "best_validation_loss": 0.6239116637393681,
+  "best_validation_accuracy": 0.8974747474747474
+}
