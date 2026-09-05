@@ -94,26 +94,41 @@ def get_split(path):
 
 def calculate_blur_score(image):
     """
-    Uses variance of the Laplacian as a simple sharpness/blur indicator.
-    Higher generally means sharper.
+    Calculate image sharpness using the variance of the
+    Laplacian.
+
+    Higher score  -> generally sharper image
+    Lower score   -> potentially blurry image
     """
 
     try:
         import cv2
+        import numpy as np
 
+        # PIL RGB image -> NumPy array
+        image_array = np.array(image)
+
+        # RGB -> grayscale
         gray = cv2.cvtColor(
-            image,
+            image_array,
             cv2.COLOR_RGB2GRAY
         )
 
-        return float(cv2.Laplacian(gray, cv2.CV_64F).var())
+        # Calculate Laplacian variance
+        laplacian = cv2.Laplacian(
+            gray,
+            cv2.CV_64F
+        )
 
-    except ImportError:
+        score = laplacian.var()
+
+        return float(score)
+
+    except Exception as e:
+        print(
+            f"Blur calculation failed: {type(e).__name__}: {e}"
+        )
         return None
-
-    except Exception:
-        return None
-
 
 def analyze_image(path):
     result = {
