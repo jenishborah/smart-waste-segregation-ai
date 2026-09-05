@@ -1,71 +1,1413 @@
-# TezHack 2026 — Smart Waste AI by Encryptos
+# ENCRYPTOS — Smart Waste Segregation AI
 
-## Waste Material Classification for Better Segregation
+> **TezHack 2026 | ML06 — Waste Material Classification for Better Segregation | ML-C12 — Why This Result?**
 
-AI-assisted waste segregation system that identifies waste materials from images, estimates prediction reliability, and provides practical disposal guidance.
+**Smart Waste Segregation AI** is an explainable AI-powered waste classification system developed by **Team Encryptos** for **TezHack 2026**.
 
-## Core Approach
+The system uses a trained **EfficientNet-B0** model to classify waste images into 16 categories and goes beyond simple classification by providing:
 
-The system combines:
+- Waste category prediction
+- Confidence score
+- Top predictions
+- Image-quality validation
+- Grad-CAM visual explanation
+- Simple-language "Why This Result?" reasoning
+- Recycling guidance
+- Local web-based demonstration
 
-- Public waste-image datasets
-- Lightweight transfer learning
-- EfficientNet-B0
-- Image preprocessing and augmentation
-- Confidence and entropy-based uncertainty detection
-- "Uncertain" handling for unclear/OOD images
-- Safety-aware handling of e-waste and hazardous/special waste
-- Rule-based disposal guidance
-- Confusion matrix and prediction analysis
-- Real-world/generalization testing
+---
 
-## Research Focus
+## Team
 
-We will investigate:
+### ENCRYPTOS
 
-1. Whether a lightweight pretrained vision model can classify common waste materials effectively.
-2. Whether combining controlled and real-world datasets improves generalization.
-3. Whether uncertainty detection reduces overconfident incorrect predictions.
-4. Whether separating ML classification from disposal policy makes the system safer and easier to adapt to local rules.
+**Event:** TezHack 2026
 
-## Primary Model
+**Problem Statement:** ML06 — Waste Material Classification for Better Segregation
 
-EfficientNet-B0 pretrained on ImageNet.
+**Challenge Card:** ML-C12 — Why This Result?
 
-## Dataset Strategy
+---
 
-- TrashNet — controlled baseline
-- RealWaste — real-world training/validation
-- TACO — external real-world robustness testing
+# Overview
 
-## User-Facing Categories
+Traditional waste-classification systems generally answer one question:
 
-1. Organic / Wet Waste
-2. Dry Recyclable Waste
-3. General / Residual Waste
-4. E-Waste
-5. Domestic Hazardous / Special Waste
-6. Sanitary Waste
-7. Uncertain
+> **What type of waste is this?**
 
-## Safety Principle
+Our system aims to answer two:
 
-The system does not certify hazardous material, guarantee recyclability, or replace local municipal waste-handling instructions.
+> **What type of waste is this?**
 
-For hazardous, electronic, chemical, medical, sharp, or other special waste, users should follow authorized local guidance.
+and
 
-## MVP Stack
+> **Why did the AI make this prediction?**
+
+The project combines image classification with visual explainability using **Grad-CAM**, allowing users to see which regions of an image contributed most strongly to the model's prediction.
+
+---
+
+# Key Idea
+
+The system follows this pipeline:
+
+```text
+                 USER UPLOADS IMAGE
+                         |
+                         v
+              IMAGE QUALITY VALIDATION
+                         |
+                         v
+                  EFFICIENTNET-B0
+                         |
+              +----------+----------+
+              |                     |
+              v                     v
+         PREDICTION             CONFIDENCE
+              |                     |
+              +----------+----------+
+                         |
+                         v
+                    GRAD-CAM
+                         |
+                         v
+               "WHY THIS RESULT?"
+                         |
+                         v
+                RECYCLING GUIDANCE
+```
+
+---
+
+# Complete User Flow
+
+```text
+Upload Image
+      |
+      v
+Validate Image
+      |
+      v
+Run ML Model
+      |
+      v
+Prediction
+      |
+      v
+Confidence
+      |
+      v
+Why This Result?
+      |
+      v
+Grad-CAM Visualization
+      |
+      v
+Recycling Guidance
+```
+
+---
+
+# Features
+
+## 1. Waste Classification
+
+The trained EfficientNet-B0 model classifies images into 16 waste categories:
+
+```text
+0   Battery
+1   Cardboard
+2   Electronic Component
+3   Electronic Device
+4   Food Organics
+5   Glass
+6   Hazardous Waste
+7   Large Electronic Appliance
+8   Metal
+9   Organic Stream
+10  Paper
+11  Plastic
+12  Recyclable Stream
+13  Residual
+14  Textile
+15  Vegetation
+```
+
+---
+
+## 2. Confidence Score
+
+The model provides the confidence associated with its prediction.
+
+Example:
+
+```text
+Prediction
+Plastic
+
+Confidence
+96.90%
+```
+
+The system also displays the top predictions:
+
+```text
+1. Plastic                  96.90%
+2. Metal                     0.47%
+3. Recyclable Stream         0.36%
+```
+
+---
+
+# 3. Why This Result?
+
+Explainability is one of the main features of this project.
+
+Instead of only displaying:
+
+```text
+Plastic
+96.90%
+```
+
+the application provides a simple explanation of the result.
+
+### Example
+
+## Why This Result?
+
+### In simple words:
+
+> The AI sees strong visual patterns that match what it learned from plastic waste during training. It is quite confident that this item belongs to the Plastic category.
+
+### What is the AI looking at?
+
+> The highlighted areas in the Grad-CAM image show which parts of the photo had the strongest influence on the prediction. Warmer areas mean the model paid more attention there.
+
+The explanation is connected to the actual prediction and the actual Grad-CAM output generated by the model.
+
+---
+
+# 4. Grad-CAM Visualization
+
+The project uses **Grad-CAM (Gradient-weighted Class Activation Mapping)** to provide a visual explanation of the model's prediction.
+
+The basic process is:
+
+```text
+Input Image
+     |
+     v
+EfficientNet-B0
+     |
+     v
+Predicted Class
+     |
+     v
+Gradients + Feature Activations
+     |
+     v
+Grad-CAM Heatmap
+     |
+     v
+Visual Explanation
+```
+
+The resulting visualization highlights image regions that were influential for the selected prediction.
+
+The web application displays the actual generated Grad-CAM image.
+
+This is not a manually created illustration or a fake explanation.
+
+---
+
+# 5. Image Quality Validation
+
+Before classification, the system performs basic image-quality validation.
+
+The current validator checks:
+
+- Whether the image exists
+- Whether the file can be opened
+- Supported image formats
+- Image dimensions
+- Extremely small images
+- Extreme aspect ratios
+- Very dark images
+- Very bright images
+- Possible blur
+- Transparency
+- Unusual image modes
+- Corrupted/unreadable files
+
+Example:
+
+```text
+IMAGE QUALITY
+
+Status     : OK
+Resolution : 524 x 524
+```
+
+If the image is unsuitable, the application can provide a user-friendly message such as:
+
+> This image isn't clear enough to classify. Try uploading a brighter, closer photo of the waste item.
+
+The current implementation intentionally keeps this stage lightweight so it can be improved later.
+
+---
+
+# 6. Recycling Guidance
+
+The system can provide basic guidance after identifying the waste category.
+
+For example, for plastic:
+
+```text
+RECYCLING GUIDANCE
+
+Empty and rinse the plastic item when appropriate,
+then place it in the designated plastic recycling stream.
+
+Follow your local recycling rules.
+```
+
+The guidance is intended as general information.
+
+Actual disposal and recycling rules can vary by location, so local waste-management rules should always be followed.
+
+---
+
+# Local Web Demo
+
+The project includes a local browser-based demonstration.
+
+Start the application with:
+
+```bash
+python app.py
+```
+
+The application will start on:
+
+```text
+http://127.0.0.1:5000
+```
+
+Open the URL in your browser.
+
+---
+
+# Web Demo Features
+
+The local web application provides:
+
+- Drag-and-drop image upload
+- Image upload button
+- Image preview
+- Image-quality validation
+- Analyze / Classify button
+- Loading state
+- Prediction result
+- Confidence percentage
+- Top predictions
+- "Why This Result?" explanation
+- Simple-language explanation
+- Grad-CAM visualization
+- Recycling guidance
+- Try Another Image / Reset functionality
+
+---
+
+# Technology Stack
+
+## Machine Learning
 
 - Python
 - PyTorch
+- Torchvision
 - EfficientNet-B0
-- Streamlit
-- GitHub
-- JSON-based disposal rules
+- Transfer Learning
+- Softmax Classification
+- Grad-CAM
 
-## Team Details
+## Image Processing
 
-Team Name: Encryptos
-Team Lead: Barasha Das 
-Members: Jenish A. Borah, Mayur Mudoi
+- Pillow
+- NumPy
+- OpenCV
 
+## Backend
+
+- Flask
+- Python
+
+## Frontend
+
+- HTML5
+- CSS3
+- JavaScript
+
+## Model Interoperability
+
+- ONNX
+- ONNX Runtime
+
+---
+
+# Machine Learning Model
+
+The primary classification model is:
+
+```text
+EfficientNet-B0
+```
+
+The trained model is used for classification across the project's 16 waste categories.
+
+## Model Input
+
+```text
+RGB Image
+```
+
+Input resolution:
+
+```text
+224 × 224
+```
+
+## Image Normalization
+
+The model uses ImageNet normalization:
+
+```text
+Mean:
+[0.485, 0.456, 0.406]
+
+Standard Deviation:
+[0.229, 0.224, 0.225]
+```
+
+## Model Output
+
+```text
+16 classes
+```
+
+The model produces a probability distribution over the 16 categories.
+
+The highest probability is used as the primary prediction.
+
+---
+
+# Project Structure
+
+```text
+smart-waste-segregation-ai/
+│
+├── app.py
+├── README.md
+├── requirements.txt
+│
+├── ml/
+│   ├── interface.py
+│   ├── pipeline.py
+│   ├── explain.py
+│   ├── image_quality_validator.py
+│   └── export_onnx.py
+│
+├── models/
+│   ├── waste_classifier.onnx
+│   └── class_names.json
+│
+├── templates/
+│   └── index.html
+│
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── app.js
+│
+├── data/
+│   ├── raw/
+│   └── reports/
+│
+└── training_outputs/
+    ├── efficientnet_b0_cached/
+    │   ├── best_model.pth
+    │   └── class_names.json
+    ├── explanations/
+    └── pipeline_results/
+```
+
+---
+
+# Important Files
+
+## `app.py`
+
+The Flask application responsible for serving the local web demo.
+
+It connects the browser interface to the existing ML inference and explanation pipeline.
+
+The intended architecture is:
+
+```text
+Browser
+   |
+   v
+Flask Application
+   |
+   v
+ML Pipeline
+   |
+   +--------> Classification
+   |
+   +--------> Grad-CAM
+   |
+   +--------> Explanation
+   |
+   +--------> Recycling Guidance
+   |
+   v
+Result
+   |
+   v
+Browser
+```
+
+The web layer is kept separate from the model implementation so the backend can later be converted into an API.
+
+---
+
+# `ml/interface.py`
+
+Provides local inference using the trained EfficientNet-B0 model.
+
+Responsibilities include:
+
+- Loading the trained model
+- Loading class names
+- Image preprocessing
+- Running inference
+- Calculating probabilities
+- Returning top predictions
+
+Example:
+
+```bash
+python ml/interface.py "data/raw/realwaste/Plastic/Plastic_821.jpg"
+```
+
+Example output:
+
+```text
+============================================================
+SMART WASTE SEGREGATION AI
+============================================================
+Image      : data/raw/realwaste/Plastic/Plastic_821.jpg
+Model      : efficientnet_b0
+Device     : cpu
+
+PREDICTION
+------------------------------------------------------------
+Class      : Plastic
+Confidence : 96.90%
+
+TOP PREDICTIONS
+------------------------------------------------------------
+1. Plastic                         96.90%
+2. Metal                            0.47%
+3. Recyclable Stream                0.36%
+============================================================
+```
+
+---
+
+# `ml/pipeline.py`
+
+Provides the complete end-to-end inference pipeline.
+
+The pipeline connects:
+
+```text
+Image
+ |
+ v
+Image Quality Validation
+ |
+ v
+Classification
+ |
+ v
+Confidence
+ |
+ v
+Grad-CAM
+ |
+ v
+Why This Result?
+ |
+ v
+Recycling Guidance
+ |
+ v
+JSON Result
+```
+
+Example:
+
+```bash
+python ml/pipeline.py "data/raw/realwaste/Plastic/Plastic_821.jpg"
+```
+
+The pipeline produces a JSON result under:
+
+```text
+training_outputs/pipeline_results/
+```
+
+---
+
+# `ml/explain.py`
+
+Responsible for generating the Grad-CAM explanation.
+
+Example:
+
+```bash
+python ml/explain.py "data/raw/realwaste/Plastic/Plastic_821.jpg"
+```
+
+Generated explanation images are stored under:
+
+```text
+training_outputs/explanations/
+```
+
+These images are used by the web interface to display the model's visual reasoning.
+
+---
+
+# `ml/image_quality_validator.py`
+
+Performs the image-quality validation stage.
+
+Reports are generated under:
+
+```text
+data/reports/
+```
+
+The validator generates:
+
+```text
+image_quality_summary.csv
+image_quality_report.csv
+image_quality_issues.csv
+image_quality_corrupt.csv
+```
+
+---
+
+# ONNX Export
+
+The trained PyTorch model can also be exported to ONNX.
+
+Run:
+
+```bash
+python ml/export_onnx.py
+```
+
+The ONNX model is generated at:
+
+```text
+models/waste_classifier.onnx
+```
+
+The class mapping is stored at:
+
+```text
+models/class_names.json
+```
+
+The export process also verifies consistency between the PyTorch and ONNX model outputs.
+
+Example:
+
+```text
+PYTORCH
+Class      : Organic Stream
+Confidence : 100.00%
+
+ONNX
+Class      : Organic Stream
+Confidence : 100.00%
+
+Maximum probability difference: 0.00000000
+
+Prediction consistency: SUCCESS
+```
+
+The ONNX version is intended to support future deployment scenarios, including mobile inference.
+
+---
+
+# Dataset
+
+The project uses waste-image datasets for model development and training.
+
+One of the datasets used is **RealWaste**, a real-world waste image dataset collected from material received at the Whyte's Gully Waste and Resource Recovery facility in Wollongong, NSW, Australia.
+
+The RealWaste dataset contains real-world waste imagery across multiple waste categories.
+
+The final model used by this project works with a broader 16-class label space.
+
+---
+
+# Dataset Download
+
+The project dataset is available through Google Drive.
+
+**Google Drive Dataset:**
+
+> Replace the placeholder below with the actual dataset link before publishing the repository.
+
+```text
+PASTE YOUR GOOGLE DRIVE DATASET LINK HERE
+```
+
+Download the dataset and place the extracted data under:
+
+```text
+data/raw/
+```
+
+Example:
+
+```text
+data/
+└── raw/
+    ├── realwaste/
+    │   ├── Cardboard/
+    │   ├── Food Organics/
+    │   ├── Glass/
+    │   ├── Metal/
+    │   ├── Paper/
+    │   ├── Plastic/
+    │   ├── Textile/
+    │   └── Vegetation/
+    │
+    └── ...
+```
+
+---
+
+# Dataset Attribution
+
+The RealWaste dataset is associated with the following research publication:
+
+```text
+Single, S., Iranmanesh, S., & Raad, R. (2023).
+
+RealWaste: A Novel Real-Life Data Set for Landfill Waste
+Classification Using Deep Learning.
+
+Information, 14(12), 633.
+```
+
+Dataset and publication information:
+
+https://www.mdpi.com/2078-2489/14/12/633
+
+RealWaste project resources:
+
+https://github.com/irenedonofrio/RealWaste-ImageClassification
+
+Please follow the original dataset's licensing and attribution requirements when using or redistributing the dataset.
+
+---
+
+# Installation
+
+## Requirements
+
+Recommended:
+
+```text
+Python 3.10+
+```
+
+The project can run on CPU.
+
+A compatible NVIDIA GPU can be used for accelerated training and inference when the appropriate CUDA-enabled PyTorch installation is available.
+
+---
+
+# Step 1 — Clone the Repository
+
+```bash
+git clone YOUR_GITHUB_REPOSITORY_URL
+cd smart-waste-segregation-ai
+```
+
+Replace:
+
+```text
+YOUR_GITHUB_REPOSITORY_URL
+```
+
+with the actual Encryptos GitHub repository URL.
+
+---
+
+# Step 2 — Create a Virtual Environment
+
+## Windows
+
+```powershell
+python -m venv venv
+```
+
+Activate:
+
+```powershell
+venv\Scripts\activate
+```
+
+## Linux / macOS
+
+```bash
+python3 -m venv venv
+```
+
+Activate:
+
+```bash
+source venv/bin/activate
+```
+
+---
+
+# Step 3 — Install Dependencies
+
+If `requirements.txt` is available:
+
+```bash
+pip install -r requirements.txt
+```
+
+Typical dependencies include:
+
+```text
+flask
+torch
+torchvision
+pillow
+numpy
+opencv-python
+onnx
+onnxruntime
+```
+
+Depending on the installed PyTorch version, additional packages may be required for ONNX export.
+
+---
+
+# Step 4 — Verify the Model
+
+The trained model checkpoint is expected at:
+
+```text
+training_outputs/efficientnet_b0_cached/best_model.pth
+```
+
+Class names are available through:
+
+```text
+training_outputs/efficientnet_b0_cached/class_names.json
+```
+
+or:
+
+```text
+models/class_names.json
+```
+
+---
+
+# Running the Project
+
+## Test the Classifier
+
+```bash
+python ml/interface.py "data/raw/realwaste/Plastic/Plastic_821.jpg"
+```
+
+---
+
+# Generate Grad-CAM
+
+```bash
+python ml/explain.py "data/raw/realwaste/Plastic/Plastic_821.jpg"
+```
+
+Check:
+
+```text
+training_outputs/explanations/
+```
+
+for the generated explanation image.
+
+---
+
+# Run the Complete Pipeline
+
+```bash
+python ml/pipeline.py "data/raw/realwaste/Plastic/Plastic_821.jpg"
+```
+
+Check:
+
+```text
+training_outputs/pipeline_results/
+```
+
+for the generated JSON result.
+
+---
+
+# Start the Web Application
+
+```bash
+python app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000
+```
+
+---
+
+# Example End-to-End Result
+
+For an example image:
+
+```text
+data/raw/realwaste/Plastic/Plastic_821.jpg
+```
+
+the current pipeline can produce:
+
+```text
+IMAGE QUALITY
+------------------------------------------------------------
+Status     : OK
+Resolution : 524 x 524
+
+PREDICTION
+------------------------------------------------------------
+Class      : Plastic
+Confidence : 96.90%
+
+TOP PREDICTIONS
+------------------------------------------------------------
+1. Plastic                           96.90%
+2. Metal                              0.47%
+3. Recyclable Stream                  0.36%
+```
+
+The system then generates the Grad-CAM visualization and displays:
+
+```text
+WHY THIS RESULT?
+
+In simple words:
+
+The AI sees strong visual patterns that match what it
+learned from plastic waste during training. It is quite
+confident that this item belongs to the Plastic category.
+```
+
+Followed by:
+
+```text
+WHAT IS THE AI LOOKING AT?
+
+The highlighted areas in the Grad-CAM image show which
+parts of the photo had the strongest influence on the
+prediction. Warmer areas mean the model paid more
+attention there.
+```
+
+Then the actual Grad-CAM visualization is displayed.
+
+---
+
+# Example User Experience
+
+```text
++--------------------------------------------------+
+|                  ENCRYPTOS                       |
+|           Smart Waste Segregation AI             |
+|                                                  |
+|              Upload Waste Image                  |
+|                                                  |
+|          [ Drag & Drop Image ]                   |
+|                                                  |
+|              [ Analyze Image ]                   |
++--------------------------------------------------+
+
+                       |
+                       v
+
++--------------------------------------------------+
+|                  PREDICTION                      |
+|                                                  |
+|                     Plastic                      |
+|                                                  |
+|                    96.90%                        |
++--------------------------------------------------+
+
+                       |
+                       v
+
++--------------------------------------------------+
+|                WHY THIS RESULT?                  |
+|                                                  |
+|  In simple words:                                |
+|                                                  |
+|  The AI sees strong visual patterns that match   |
+|  what it learned from plastic waste during       |
+|  training.                                       |
+|                                                  |
+|  What is the AI looking at?                     |
+|                                                  |
+|  The highlighted regions show which parts of     |
+|  the image had the strongest influence.           |
+|                                                  |
+|                 [ Grad-CAM ]                     |
++--------------------------------------------------+
+
+                       |
+                       v
+
++--------------------------------------------------+
+|             RECYCLING GUIDANCE                  |
+|                                                  |
+|  Empty and rinse the item when appropriate,      |
+|  then follow your local recycling rules.         |
++--------------------------------------------------+
+```
+
+---
+
+# Explainability Philosophy
+
+The project follows a simple principle:
+
+> **Don't just tell the user what the AI predicted. Show them why the AI focused on it.**
+
+The result is divided into four understandable questions:
+
+```text
+WHAT?
+    |
+    v
+Prediction
+
+HOW CONFIDENT?
+    |
+    v
+Confidence
+
+WHY?
+    |
+    v
+Simple-language explanation
+
+WHERE?
+    |
+    v
+Grad-CAM visualization
+
+WHAT NEXT?
+    |
+    v
+Recycling guidance
+```
+
+---
+
+# Future Architecture
+
+The current implementation is a local Flask prototype.
+
+The architecture is intentionally kept modular so it can later evolve into:
+
+```text
+                  ANDROID APPLICATION
+                           |
+                           v
+                       REST API
+                           |
+              +------------+------------+
+              |                         |
+              v                         v
+        ML INFERENCE               EXPLANATION
+              |                         |
+              v                         v
+       CLASSIFICATION                GRAD-CAM
+              |                         |
+              +------------+------------+
+                           |
+                           v
+                     API RESPONSE
+                           |
+                           v
+                     ANDROID APP
+```
+
+This allows the ML model to remain independent from the frontend.
+
+---
+
+# Future API Response
+
+A future API can return information such as:
+
+```json
+{
+  "prediction": "Plastic",
+  "confidence": 0.969,
+  "top_predictions": [
+    {
+      "class": "Plastic",
+      "confidence": 0.969
+    },
+    {
+      "class": "Metal",
+      "confidence": 0.0047
+    },
+    {
+      "class": "Recyclable Stream",
+      "confidence": 0.0036
+    }
+  ],
+  "image_quality": {
+    "status": "OK"
+  },
+  "explanation": {
+    "method": "Grad-CAM"
+  },
+  "recycling_guidance": "Follow your local recycling rules."
+}
+```
+
+---
+
+# Development Status
+
+## Completed
+
+- [x] Dataset preparation
+- [x] Image-quality validation
+- [x] EfficientNet-B0 model
+- [x] 16-class waste classification
+- [x] Trained model checkpoint
+- [x] Local inference
+- [x] Top-k predictions
+- [x] Confidence scores
+- [x] Grad-CAM explanation
+- [x] "Why This Result?" explanation
+- [x] Simple-language explanation
+- [x] Recycling guidance
+- [x] End-to-end pipeline
+- [x] JSON pipeline output
+- [x] ONNX export
+- [x] ONNX verification
+- [x] Local Flask web application
+- [x] Image upload
+- [x] Image preview
+- [x] Image-quality validation in web flow
+- [x] Browser-based classification
+- [x] Grad-CAM visualization in web demo
+
+---
+
+# Future Improvements
+
+Potential future improvements include:
+
+- [ ] REST API
+- [ ] Android application integration
+- [ ] Improved image-quality validation
+- [ ] Better low-confidence handling
+- [ ] Multi-object waste detection
+- [ ] Improved dataset coverage
+- [ ] Model performance benchmarking
+- [ ] Confusion matrix
+- [ ] Precision / Recall / F1 evaluation
+- [ ] Per-class performance analysis
+- [ ] Mobile-optimized inference
+- [ ] Production deployment
+- [ ] Automatic cleanup of uploaded images
+- [ ] Localized recycling recommendations
+- [ ] Continuous model improvement
+
+---
+
+# Limitations
+
+The model's confidence should not be interpreted as absolute certainty.
+
+Performance may vary depending on:
+
+- Lighting conditions
+- Camera quality
+- Image resolution
+- Background
+- Object orientation
+- Occlusion
+- Unusual waste objects
+- Multiple objects in one image
+- Poor image quality
+- Waste categories that are underrepresented in the training data
+
+Grad-CAM should also be interpreted appropriately.
+
+It provides a visualization of model activations and influential regions. It should not be interpreted as a definitive causal explanation of the model's decision.
+
+---
+
+# Reproducibility
+
+The primary inference configuration is:
+
+```text
+Model:
+EfficientNet-B0
+
+Input:
+RGB
+
+Input Resolution:
+224 × 224
+
+Normalization:
+ImageNet Mean / Standard Deviation
+
+Number of Classes:
+16
+```
+
+Class mapping:
+
+```text
+models/class_names.json
+```
+
+Model checkpoint:
+
+```text
+training_outputs/efficientnet_b0_cached/best_model.pth
+```
+
+---
+
+# Generated Runtime Files
+
+The following directories may contain generated files during development and demo usage:
+
+```text
+uploads/
+web_uploads/
+data/web_uploads/
+training_outputs/explanations/
+training_outputs/pipeline_results/
+```
+
+These files are generated by the application and inference pipeline.
+
+For GitHub, temporary uploads and generated runtime files should generally be excluded using `.gitignore`.
+
+---
+
+# Recommended `.gitignore`
+
+Create a `.gitignore` file containing:
+
+```gitignore
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Python cache
+.pytest_cache/
+
+# Runtime uploads
+uploads/
+web_uploads/
+data/web_uploads/
+
+# Generated inference results
+training_outputs/explanations/
+training_outputs/pipeline_results/
+
+# Dataset
+data/raw/
+
+# Large model checkpoints
+*.pth
+*.pt
+*.ckpt
+
+# OS files
+.DS_Store
+Thumbs.db
+```
+
+If the trained model checkpoint or dataset is intentionally distributed with the project, remove the corresponding entries from `.gitignore`.
+
+---
+
+# Privacy and Security
+
+The current project is intended as a local development and hackathon demonstration.
+
+Uploaded images are processed locally by the application.
+
+Before production deployment, additional security measures should be implemented, including:
+
+- File-size limits
+- Strict file validation
+- Secure upload handling
+- Safe temporary directories
+- Automatic cleanup
+- Rate limiting
+- Authentication where required
+- Input sanitization
+- Production WSGI server configuration
+- Proper error handling
+- Secure API configuration
+
+---
+
+# Why This Project?
+
+Waste segregation is an important part of efficient recycling and waste management.
+
+However, identifying waste alone is not always enough.
+
+Users may also want to understand:
+
+> **Why did the AI classify it this way?**
+
+This project therefore combines:
+
+```text
+CLASSIFICATION
+        +
+CONFIDENCE
+        +
+EXPLAINABILITY
+        +
+VISUAL EVIDENCE
+        +
+RECYCLING GUIDANCE
+```
+
+The goal is to make waste classification more transparent, understandable, and useful.
+
+---
+
+# Core Concept
+
+## From:
+
+```text
+"AI says this is Plastic."
+```
+
+## To:
+
+```text
+"AI says this is Plastic,
+it is 96.90% confident,
+and here is the part of the image
+that influenced the prediction."
+```
+
+---
+
+# Team Encryptos
+
+## TezHack 2026
+
+### ML06 — Waste Material Classification for Better Segregation
+
+### ML-C12 — Why This Result?
+
+---
+
+# Smart Waste Segregation AI
+
+> **Don't just tell people what the waste is.**
+>
+> **Show them why the AI thinks it is.**
+
+---
+
+# Acknowledgements
+
+We acknowledge the creators and contributors of the datasets, research publications, and open-source technologies used in this project.
+
+Special acknowledgement is given to the creators of the RealWaste dataset for providing real-world waste imagery for machine-learning research and classification.
+
+---
+
+# License
+
+This project was developed by **Team Encryptos** for **TezHack 2026**.
+
+Add the project's final license here if a specific open-source or project license is selected.
+
+Third-party datasets, libraries, research material, and other resources remain subject to their respective licenses and attribution requirements.
+
+---
+
+# Contact / Project Information
+
+**Team:** Encryptos
+
+**Event:** TezHack 2026
+
+**Problem Statement:** ML06 — Waste Material Classification for Better Segregation
+
+**Challenge:** ML-C12 — Why This Result?
+
+**Project:** Smart Waste Segregation AI
+
+**Model:** EfficientNet-B0
+
+**Explainability:** Grad-CAM
+
+**Interface:** Flask + HTML + CSS + JavaScript
+
+**Deployment Target:** Local Web Demo → Future Android Application
