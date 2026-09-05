@@ -1,125 +1,116 @@
 """
 WASTE SEGREGATION AI
-Dataset V1 - Image Classification Training
-
-Designed for:
-- Google Colab GPU
-- Google Drive dataset
-- GitHub source code
+MODEL TRAINING PIPELINE
 
 Dataset:
+    13,196 curated images
+    16 unified classes
+
+Manifest:
     data/reports/dataset_v1_curated_manifest.csv
 
-Expected manifest columns:
-    image_path
-    unified_class
-    split
+Images:
+    data/raw/
 
-Expected Drive structure:
-    DATA_ROOT/
-    ├── raw/
-    │   ├── trashnet/
-    │   ├── realwaste/
-    │   ├── ewaste/
-    │   └── phenomsg/
-    └── reports/
-        └── dataset_v1_curated_manifest.csv
+Configuration:
+    configs/training_config.json
 
-The manifest contains paths relative to data/raw.
+Usage:
+    python ml/train.py
+
+Optional:
+    python ml/train.py --config configs/training_config.json
 """
 
-from pathlib import Path
 import argparse
 import json
 import random
-import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from PIL import Image
+from PIL import Image, ImageFile
 
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms, models
+from torchvision import models, transforms
 
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
     confusion_matrix,
+    f1_score,
 )
 
-
-# ============================================================
-# CONFIGURATION
-# ============================================================
-
-DEFAULT_DATA_ROOT = "/content/drive/MyDrive/smart-waste-segregation-ai"
-
-MANIFEST_RELATIVE = Path(
-    "reports/dataset_v1_curated_manifest.csv"
-)
-
-RAW_RELATIVE = Path("raw")
-
-OUTPUT_RELATIVE = Path("training_outputs")
-
-IMAGE_SIZE = 224
-
-BATCH_SIZE = 32
-
-NUM_WORKERS = 2
-
-EPOCHS = 20
-
-LEARNING_RATE = 1e-4
-
-WEIGHT_DECAY = 1e-4
-
-PATIENCE = 5
-
-SEED = 42
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 # ============================================================
 # REPRODUCIBILITY
 # ============================================================
 
-def set_seed(seed=SEED):
+def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
-
     torch.manual_seed(seed)
 
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
 
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 
 # ============================================================
-# DEVICE
+# CONFIG
 # ============================================================
 
-def get_device():
-    if torch.cuda.is_available():
-        device = torch.device("cuda")
+def load_config(config_path):
+    with open(config_path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-        print("=" * 70)
-        print("GPU ENABLED")
-        print("=" * 70)
-        print("GPU:", torch.cuda.get_device_name(0))
-        print("CUDA:", torch.version.cuda)
 
-    else:
-        device = torch.device("cpu")
+def resolve_path(project_root, value):
+    path = Path(value)
 
-        print("=" * 70)
-        print("WARNING: GPU NOT AVAILABLE")
-        print("=" * 70)
-        print("Training will run on CPU.")
+    if path.is_absolute():
+        return path
 
-    print("Device:", device)
+    return project_root / path
 
-    return device
+
+def save_json(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    def convert(obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+
+        if isinstance(obj, np.floating):
+            return float(obj)
+
+        if isinstance(obj, np.bool_):
+            return bool(obj)
+
+        if isinstance(obj, torch.Tensor):
+            return obj.detach().cpu().tolist()
+
+        if isinstance(obj, Path):
+            return str(obj)
+
+        raise TypeError(
+            f"Object of type {type(obj).__name__} "
+            "is not JSON serializable"
+        )
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(
+            data,
+            f,
+            indent=2,
+            default=convert,
+        )
 
 
 # ============================================================
@@ -131,17 +122,13 @@ class WasteDataset(Dataset):
     def __init__(
         self,
         dataframe,
-        raw_root,
+        image_root,
         class_to_idx,
         transform=None,
     ):
-
-        self.df = dataframe.reset_index(drop=True)
-
-        self.raw_root = Path(raw_root)
-
+        self.df = dataframe.reset_index(drop=True).copy()
+        self.image_root = Path(image_root)
         self.class_to_idx = class_to_idx
-
         self.transform = transform
 
     def __len__(self):
@@ -153,401 +140,259 @@ class WasteDataset(Dataset):
 
         relative_path = Path(str(row["image_path"]))
 
-        image_path = self.raw_root / relative_path
+        image_path = self.image_root / relative_path
 
         try:
-
             image = Image.open(image_path).convert("RGB")
 
-        except Exception as e:
+        except Exception as exc:
 
             raise RuntimeError(
-                f"Could not load image:\n{image_path}\n\n"
-                f"Error: {e}"
-            )
+                f"Could not read image:\n{image_path}\n\n{exc}"
+            ) from exc
 
-        label_name = str(row["unified_class"])
-
-        label = self.class_to_idx[label_name]
-
-        if self.transform:
+        if self.transform is not None:
             image = self.transform(image)
 
+        class_name = str(row["unified_class"])
+
+        label = self.class_to_idx[class_name]
+
         return image, label
-
-
-# ============================================================
-# TRANSFORMS
-# ============================================================
-
-def create_transforms():
-
-    train_transform = transforms.Compose([
-
-        transforms.Resize(
-            (IMAGE_SIZE, IMAGE_SIZE)
-        ),
-
-        transforms.RandomHorizontalFlip(
-            p=0.5
-        ),
-
-        transforms.RandomRotation(
-            degrees=10
-        ),
-
-        transforms.ColorJitter(
-            brightness=0.2,
-            contrast=0.2,
-            saturation=0.2,
-            hue=0.05,
-        ),
-
-        transforms.ToTensor(),
-
-        transforms.Normalize(
-            mean=[
-                0.485,
-                0.456,
-                0.406,
-            ],
-            std=[
-                0.229,
-                0.224,
-                0.225,
-            ],
-        ),
-    ])
-
-    eval_transform = transforms.Compose([
-
-        transforms.Resize(
-            (IMAGE_SIZE, IMAGE_SIZE)
-        ),
-
-        transforms.ToTensor(),
-
-        transforms.Normalize(
-            mean=[
-                0.485,
-                0.456,
-                0.406,
-            ],
-            std=[
-                0.229,
-                0.224,
-                0.225,
-            ],
-        ),
-    ])
-
-    return train_transform, eval_transform
 
 
 # ============================================================
 # MODEL
 # ============================================================
 
-def create_model(num_classes):
+def build_model(
+    architecture,
+    num_classes,
+):
 
-    print()
-    print("=" * 70)
-    print("CREATING MODEL")
-    print("=" * 70)
+    architecture = architecture.lower().strip()
 
-    # ResNet18 is a good initial baseline:
-    # relatively lightweight and suitable for later Android deployment.
+    if architecture == "resnet18":
 
-    model = models.resnet18(
-        weights=models.ResNet18_Weights.DEFAULT
+        try:
+            weights = models.ResNet18_Weights.DEFAULT
+
+            model = models.resnet18(
+                weights=weights
+            )
+
+        except Exception:
+
+            print(
+                "WARNING: Could not load pretrained "
+                "ResNet18 weights."
+            )
+
+            model = models.resnet18(
+                weights=None
+            )
+
+        model.fc = nn.Linear(
+            model.fc.in_features,
+            num_classes,
+        )
+
+        return model
+
+    if architecture == "resnet50":
+
+        try:
+            weights = models.ResNet50_Weights.DEFAULT
+
+            model = models.resnet50(
+                weights=weights
+            )
+
+        except Exception:
+
+            print(
+                "WARNING: Could not load pretrained "
+                "ResNet50 weights."
+            )
+
+            model = models.resnet50(
+                weights=None
+            )
+
+        model.fc = nn.Linear(
+            model.fc.in_features,
+            num_classes,
+        )
+
+        return model
+
+    raise ValueError(
+        f"Unsupported architecture: {architecture}\n"
+        "Supported: resnet18, resnet50"
     )
-
-    in_features = model.fc.in_features
-
-    model.fc = nn.Linear(
-        in_features,
-        num_classes
-    )
-
-    print("Architecture: ResNet18")
-    print("Classes:", num_classes)
-
-    return model
 
 
 # ============================================================
-# TRAINING
+# TRAIN / VALIDATE
 # ============================================================
 
-def train_one_epoch(
+def run_epoch(
     model,
     loader,
     criterion,
     optimizer,
     device,
+    training,
 ):
 
-    model.train()
+    if training:
+        model.train()
+
+    else:
+        model.eval()
 
     running_loss = 0.0
 
-    correct = 0
+    all_targets = []
+    all_predictions = []
 
-    total = 0
-
-    for images, labels in loader:
+    for images, targets in loader:
 
         images = images.to(
             device,
-            non_blocking=True
+            non_blocking=True,
         )
 
-        labels = labels.to(
+        targets = targets.to(
             device,
-            non_blocking=True
+            non_blocking=True,
         )
 
-        optimizer.zero_grad()
+        if training:
 
-        outputs = model(images)
-
-        loss = criterion(
-            outputs,
-            labels
-        )
-
-        loss.backward()
-
-        optimizer.step()
-
-        running_loss += (
-            loss.item() * images.size(0)
-        )
-
-        predictions = outputs.argmax(
-            dim=1
-        )
-
-        correct += (
-            predictions == labels
-        ).sum().item()
-
-        total += labels.size(0)
-
-    epoch_loss = running_loss / total
-
-    epoch_accuracy = correct / total
-
-    return epoch_loss, epoch_accuracy
-
-
-# ============================================================
-# VALIDATION
-# ============================================================
-
-def evaluate(
-    model,
-    loader,
-    criterion,
-    device,
-):
-
-    model.eval()
-
-    running_loss = 0.0
-
-    correct = 0
-
-    total = 0
-
-    all_labels = []
-
-    all_predictions = []
-
-    with torch.no_grad():
-
-        for images, labels in loader:
-
-            images = images.to(
-                device,
-                non_blocking=True
+            optimizer.zero_grad(
+                set_to_none=True
             )
 
-            labels = labels.to(
-                device,
-                non_blocking=True
-            )
+        with torch.set_grad_enabled(training):
 
             outputs = model(images)
 
             loss = criterion(
                 outputs,
-                labels
+                targets,
             )
 
-            running_loss += (
-                loss.item() * images.size(0)
-            )
+            if training:
 
-            predictions = outputs.argmax(
-                dim=1
-            )
+                loss.backward()
 
-            correct += (
-                predictions == labels
-            ).sum().item()
+                optimizer.step()
 
-            total += labels.size(0)
+        predictions = outputs.argmax(
+            dim=1
+        )
 
-            all_labels.extend(
-                labels.cpu().numpy()
-            )
+        running_loss += (
+            loss.item()
+            * images.size(0)
+        )
 
-            all_predictions.extend(
-                predictions.cpu().numpy()
-            )
+        all_targets.extend(
+            targets.detach()
+            .cpu()
+            .tolist()
+        )
 
-    epoch_loss = running_loss / total
+        all_predictions.extend(
+            predictions.detach()
+            .cpu()
+            .tolist()
+        )
 
-    epoch_accuracy = correct / total
+    total = len(all_targets)
 
-    return (
-        epoch_loss,
-        epoch_accuracy,
-        all_labels,
-        all_predictions,
-    )
+    if total == 0:
+
+        return {
+            "loss": 0.0,
+            "accuracy": 0.0,
+            "macro_f1": 0.0,
+        }
+
+    return {
+
+        "loss":
+            running_loss / total,
+
+        "accuracy":
+            accuracy_score(
+                all_targets,
+                all_predictions,
+            ),
+
+        "macro_f1":
+            f1_score(
+                all_targets,
+                all_predictions,
+                average="macro",
+                zero_division=0,
+            ),
+    }
 
 
 # ============================================================
-# TEST
+# PREDICTION
 # ============================================================
 
-def test_model(
+@torch.no_grad()
+def predict_all(
     model,
     loader,
     device,
-    class_names,
-    output_dir,
 ):
-
-    print()
-    print("=" * 70)
-    print("FINAL TEST")
-    print("=" * 70)
 
     model.eval()
 
-    all_labels = []
-
+    all_targets = []
     all_predictions = []
-
     all_confidences = []
 
-    with torch.no_grad():
+    for images, targets in loader:
 
-        for images, labels in loader:
-
-            images = images.to(
-                device,
-                non_blocking=True
-            )
-
-            outputs = model(images)
-
-            probabilities = torch.softmax(
-                outputs,
-                dim=1
-            )
-
-            confidence, predictions = (
-                probabilities.max(dim=1)
-            )
-
-            all_labels.extend(
-                labels.numpy()
-            )
-
-            all_predictions.extend(
-                predictions.cpu().numpy()
-            )
-
-            all_confidences.extend(
-                confidence.cpu().numpy()
-            )
-
-    accuracy = accuracy_score(
-        all_labels,
-        all_predictions
-    )
-
-    print(
-        f"Test Accuracy: {accuracy * 100:.2f}%"
-    )
-
-    report = classification_report(
-        all_labels,
-        all_predictions,
-        target_names=class_names,
-        output_dict=True,
-        zero_division=0,
-    )
-
-    report_df = pd.DataFrame(report).transpose()
-
-    report_path = (
-        output_dir /
-        "classification_report.csv"
-    )
-
-    report_df.to_csv(
-        report_path
-    )
-
-    cm = confusion_matrix(
-        all_labels,
-        all_predictions,
-    )
-
-    cm_df = pd.DataFrame(
-        cm,
-        index=class_names,
-        columns=class_names,
-    )
-
-    cm_path = (
-        output_dir /
-        "confusion_matrix.csv"
-    )
-
-    cm_df.to_csv(cm_path)
-
-    results = {
-        "test_accuracy": float(accuracy),
-        "num_test_images": int(len(all_labels)),
-        "classes": class_names,
-    }
-
-    with open(
-        output_dir / "test_results.json",
-        "w",
-        encoding="utf-8",
-    ) as f:
-
-        json.dump(
-            results,
-            f,
-            indent=2,
+        images = images.to(
+            device,
+            non_blocking=True,
         )
 
-    print()
-    print("Classification report:")
-    print(report_df.round(4).to_string())
+        outputs = model(images)
 
-    print()
-    print("Saved:")
-    print(report_path)
-    print(cm_path)
+        probabilities = torch.softmax(
+            outputs,
+            dim=1,
+        )
+
+        confidences, predictions = (
+            probabilities.max(dim=1)
+        )
+
+        all_targets.extend(
+            targets.tolist()
+        )
+
+        all_predictions.extend(
+            predictions.cpu().tolist()
+        )
+
+        all_confidences.extend(
+            confidences.cpu().tolist()
+        )
+
+    return (
+        np.array(all_targets),
+        np.array(all_predictions),
+        np.array(all_confidences),
+    )
 
 
 # ============================================================
@@ -556,110 +401,287 @@ def test_model(
 
 def main():
 
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--data-root",
-        type=str,
-        default=DEFAULT_DATA_ROOT,
-        help="Google Drive dataset root",
+    parser = argparse.ArgumentParser(
+        description="Train waste segregation model"
     )
 
     parser.add_argument(
-        "--epochs",
-        type=int,
-        default=EPOCHS,
-    )
-
-    parser.add_argument(
-        "--batch-size",
-        type=int,
-        default=BATCH_SIZE,
-    )
-
-    parser.add_argument(
-        "--learning-rate",
-        type=float,
-        default=LEARNING_RATE,
+        "--config",
+        default="configs/training_config.json",
+        help="Training configuration file",
     )
 
     args = parser.parse_args()
 
-    set_seed()
+    # --------------------------------------------------------
+    # PROJECT PATHS
+    # --------------------------------------------------------
 
-    print()
-    print("=" * 70)
-    print("WASTE SEGREGATION AI")
-    print("MODEL TRAINING")
-    print("=" * 70)
-
-    data_root = Path(
-        args.data_root
-    ).expanduser().resolve()
-
-    manifest_path = (
-        data_root /
-        MANIFEST_RELATIVE
+    project_root = (
+        Path(__file__)
+        .resolve()
+        .parents[1]
     )
 
-    raw_root = (
-        data_root /
-        RAW_RELATIVE
+    config_path = resolve_path(
+        project_root,
+        args.config,
     )
 
-    output_dir = (
-        data_root /
-        OUTPUT_RELATIVE
+    config = load_config(
+        config_path
+    )
+
+    # --------------------------------------------------------
+    # CONFIG VALUES
+    # --------------------------------------------------------
+
+    seed = int(
+        config.get(
+            "seed",
+            42,
+        )
+    )
+
+    image_size = int(
+        config.get(
+            "image_size",
+            224,
+        )
+    )
+
+    batch_size = int(
+        config.get(
+            "batch_size",
+            32,
+        )
+    )
+
+    epochs = int(
+        config.get(
+            "epochs",
+            20,
+        )
+    )
+
+    learning_rate = float(
+        config.get(
+            "learning_rate",
+            1e-4,
+        )
+    )
+
+    weight_decay = float(
+        config.get(
+            "weight_decay",
+            1e-4,
+        )
+    )
+
+    patience = int(
+        config.get(
+            "patience",
+            5,
+        )
+    )
+
+    num_workers = int(
+        config.get(
+            "num_workers",
+            2,
+        )
+    )
+
+    architecture = str(
+        config.get(
+            "architecture",
+            "resnet18",
+        )
+    )
+
+    set_seed(seed)
+
+    # --------------------------------------------------------
+    # DATASET CONFIG
+    # --------------------------------------------------------
+
+    dataset_cfg = config.get(
+        "dataset",
+        {}
+    )
+
+    manifest_value = dataset_cfg.get(
+        "manifest",
+        "data/reports/dataset_v1_curated_manifest.csv",
+    )
+
+    manifest_path = resolve_path(
+        project_root,
+        manifest_value,
+    )
+
+    # Support configs using:
+    # reports/...
+    # instead of:
+    # data/reports/...
+
+    if not manifest_path.exists():
+
+        alternative = (
+            project_root
+            / "data"
+            / manifest_value
+        )
+
+        if alternative.exists():
+
+            manifest_path = alternative
+
+    raw_value = dataset_cfg.get(
+        "raw_directory",
+        "data/raw",
+    )
+
+    raw_directory = resolve_path(
+        project_root,
+        raw_value,
+    )
+
+    if not raw_directory.exists():
+
+        alternative_raw = (
+            project_root
+            / "data"
+            / raw_value
+        )
+
+        if alternative_raw.exists():
+
+            raw_directory = alternative_raw
+
+    # --------------------------------------------------------
+    # OUTPUT CONFIG
+    # --------------------------------------------------------
+
+    output_cfg = config.get(
+        "output",
+        {}
+    )
+
+    output_directory = output_cfg.get(
+        "directory",
+        "training_outputs",
+    )
+
+    output_dir = resolve_path(
+        project_root,
+        output_directory,
     )
 
     output_dir.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
 
-    print()
-    print("DATA ROOT:")
-    print(data_root)
+    # --------------------------------------------------------
+    # DEVICE
+    # --------------------------------------------------------
 
-    print()
-    print("MANIFEST:")
-    print(manifest_path)
-
-    print()
-    print("RAW IMAGE ROOT:")
-    print(raw_root)
-
-    print()
-    print("OUTPUT:")
-    print(output_dir)
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else "cpu"
+    )
 
     # --------------------------------------------------------
-    # Verify paths
+    # HEADER
+    # --------------------------------------------------------
+
+    print("=" * 72)
+    print("WASTE SEGREGATION AI")
+    print("MODEL TRAINING")
+    print("=" * 72)
+
+    print(
+        f"Project root:       {project_root}"
+    )
+
+    print(
+        f"Config:             {config_path}"
+    )
+
+    print(
+        f"Manifest:           {manifest_path}"
+    )
+
+    print(
+        f"Image root:         {raw_directory}"
+    )
+
+    print(
+        f"Output directory:   {output_dir}"
+    )
+
+    print(
+        f"Architecture:       {architecture}"
+    )
+
+    print(
+        f"Image size:         {image_size}"
+    )
+
+    print(
+        f"Batch size:         {batch_size}"
+    )
+
+    print(
+        f"Epochs:             {epochs}"
+    )
+
+    print(
+        f"Learning rate:      {learning_rate}"
+    )
+
+    print(
+        f"Device:             {device}"
+    )
+
+    if device.type == "cuda":
+
+        print(
+            f"GPU:                "
+            f"{torch.cuda.get_device_name(0)}"
+        )
+
+    else:
+
+        print(
+            "WARNING: CUDA is not available."
+        )
+
+    # --------------------------------------------------------
+    # VALIDATE PATHS
     # --------------------------------------------------------
 
     if not manifest_path.exists():
 
         raise FileNotFoundError(
             f"\nManifest not found:\n"
-            f"{manifest_path}\n\n"
-            f"Check your Google Drive path."
+            f"{manifest_path}\n"
         )
 
-    if not raw_root.exists():
+    if not raw_directory.exists():
 
         raise FileNotFoundError(
-            f"\nRaw dataset directory not found:\n"
-            f"{raw_root}"
+            f"\nImage directory not found:\n"
+            f"{raw_directory}\n"
         )
 
     # --------------------------------------------------------
-    # Load manifest
+    # LOAD MANIFEST
     # --------------------------------------------------------
 
-    print()
-    print("=" * 70)
-    print("LOADING MANIFEST")
-    print("=" * 70)
+    print("\nLoading dataset manifest...")
 
     df = pd.read_csv(
         manifest_path
@@ -672,338 +694,524 @@ def main():
     ]
 
     missing_columns = [
-        c for c in required_columns
+        c
+        for c in required_columns
         if c not in df.columns
     ]
 
     if missing_columns:
 
         raise ValueError(
-            f"Missing required columns: "
+            "Manifest is missing columns: "
             f"{missing_columns}"
         )
 
-    print("Total images:", len(df))
-
-    print()
-    print("Splits:")
-    print(
-        df["split"].value_counts()
-    )
-
-    print()
-    print(
-        "Classes:",
-        df["unified_class"].nunique()
-    )
+    df = df.dropna(
+        subset=required_columns
+    ).copy()
 
     # --------------------------------------------------------
-    # Classes
+    # CLASSES
     # --------------------------------------------------------
 
-    class_names = sorted(
+    classes = sorted(
         df["unified_class"]
         .astype(str)
         .unique()
-        .tolist()
     )
+
+    num_classes = len(classes)
 
     class_to_idx = {
         name: index
         for index, name
-        in enumerate(class_names)
+        in enumerate(classes)
     }
 
-    print()
-    print("CLASS MAPPING")
+    idx_to_class = {
+        str(index): name
+        for name, index
+        in class_to_idx.items()
+    }
 
-    for name, index in class_to_idx.items():
+    configured_classes = config.get(
+        "num_classes"
+    )
+
+    if (
+        configured_classes is not None
+        and int(configured_classes)
+        != num_classes
+    ):
+
+        raise ValueError(
+            f"Config says {configured_classes} "
+            f"classes, but manifest contains "
+            f"{num_classes}."
+        )
+
+    print(
+        f"\nTotal images:       {len(df):,}"
+    )
+
+    print(
+        f"Number of classes:  {num_classes}"
+    )
+
+    print("\nClass mapping:")
+
+    for index, name in enumerate(classes):
 
         print(
-            f"{index:2d} -> {name}"
-        )
-
-    # Save class mapping
-
-    with open(
-        output_dir / "class_names.json",
-        "w",
-        encoding="utf-8",
-    ) as f:
-
-        json.dump(
-            class_names,
-            f,
-            indent=2,
-        )
-
-    with open(
-        output_dir / "class_to_idx.json",
-        "w",
-        encoding="utf-8",
-    ) as f:
-
-        json.dump(
-            class_to_idx,
-            f,
-            indent=2,
+            f"  {index:2d} -> {name}"
         )
 
     # --------------------------------------------------------
-    # Split
+    # SPLITS
     # --------------------------------------------------------
 
     train_df = df[
-        df["split"] == "train"
+        df["split"].astype(str)
+        == "train"
     ].copy()
 
     val_df = df[
-        df["split"] == "val"
+        df["split"].astype(str)
+        == "val"
     ].copy()
 
     test_df = df[
-        df["split"] == "test"
+        df["split"].astype(str)
+        == "test"
     ].copy()
 
-    print()
-    print("=" * 70)
-    print("DATASET SPLIT")
-    print("=" * 70)
+    print("\nSplits:")
 
     print(
-        "Train:",
-        len(train_df)
+        f"  Train:             {len(train_df):,}"
     )
 
     print(
-        "Validation:",
-        len(val_df)
+        f"  Validation:        {len(val_df):,}"
     )
 
     print(
-        "Test:",
-        len(test_df)
+        f"  Test:              {len(test_df):,}"
     )
 
     # --------------------------------------------------------
-    # Transforms
+    # IMAGE EXISTENCE
     # --------------------------------------------------------
 
-    train_transform, eval_transform = (
-        create_transforms()
+    print(
+        "\nChecking image files..."
+    )
+
+    missing_images = []
+
+    for relative_path in (
+        df["image_path"]
+        .astype(str)
+    ):
+
+        image_path = (
+            raw_directory
+            / Path(relative_path)
+        )
+
+        if not image_path.exists():
+
+            missing_images.append(
+                str(image_path)
+            )
+
+    if missing_images:
+
+        print(
+            f"Missing images: "
+            f"{len(missing_images)}"
+        )
+
+        for path in missing_images[:10]:
+
+            print(
+                f"  {path}"
+            )
+
+        raise FileNotFoundError(
+            "Some images referenced by "
+            "the manifest are missing."
+        )
+
+    print(
+        f"All {len(df):,} image files found."
     )
 
     # --------------------------------------------------------
-    # Datasets
+    # TRANSFORMS
+    # --------------------------------------------------------
+
+    imagenet_mean = [
+        0.485,
+        0.456,
+        0.406,
+    ]
+
+    imagenet_std = [
+        0.229,
+        0.224,
+        0.225,
+    ]
+
+    train_transform = transforms.Compose([
+
+        transforms.Resize(
+            (
+                image_size,
+                image_size,
+            )
+        ),
+
+        transforms.RandomHorizontalFlip(
+            p=0.5
+        ),
+
+        transforms.RandomRotation(
+            degrees=10
+        ),
+
+        transforms.ColorJitter(
+            brightness=0.15,
+            contrast=0.15,
+            saturation=0.15,
+            hue=0.03,
+        ),
+
+        transforms.ToTensor(),
+
+        transforms.Normalize(
+            imagenet_mean,
+            imagenet_std,
+        ),
+    ])
+
+    eval_transform = transforms.Compose([
+
+        transforms.Resize(
+            (
+                image_size,
+                image_size,
+            )
+        ),
+
+        transforms.ToTensor(),
+
+        transforms.Normalize(
+            imagenet_mean,
+            imagenet_std,
+        ),
+    ])
+
+    # --------------------------------------------------------
+    # DATASETS
     # --------------------------------------------------------
 
     train_dataset = WasteDataset(
         train_df,
-        raw_root,
+        raw_directory,
         class_to_idx,
         train_transform,
     )
 
     val_dataset = WasteDataset(
         val_df,
-        raw_root,
+        raw_directory,
         class_to_idx,
         eval_transform,
     )
 
     test_dataset = WasteDataset(
         test_df,
-        raw_root,
+        raw_directory,
         class_to_idx,
         eval_transform,
     )
-
-    # --------------------------------------------------------
-    # Device
-    # --------------------------------------------------------
-
-    device = get_device()
-
-    # --------------------------------------------------------
-    # DataLoaders
-    # --------------------------------------------------------
 
     pin_memory = (
         device.type == "cuda"
     )
 
+    # --------------------------------------------------------
+    # DATALOADERS
+    # --------------------------------------------------------
+
     train_loader = DataLoader(
         train_dataset,
-        batch_size=args.batch_size,
+        batch_size=batch_size,
         shuffle=True,
-        num_workers=NUM_WORKERS,
+        num_workers=num_workers,
         pin_memory=pin_memory,
+        persistent_workers=(
+            num_workers > 0
+        ),
     )
 
     val_loader = DataLoader(
         val_dataset,
-        batch_size=args.batch_size,
+        batch_size=batch_size,
         shuffle=False,
-        num_workers=NUM_WORKERS,
+        num_workers=num_workers,
         pin_memory=pin_memory,
+        persistent_workers=(
+            num_workers > 0
+        ),
     )
 
     test_loader = DataLoader(
         test_dataset,
-        batch_size=args.batch_size,
+        batch_size=batch_size,
         shuffle=False,
-        num_workers=NUM_WORKERS,
+        num_workers=num_workers,
         pin_memory=pin_memory,
+        persistent_workers=(
+            num_workers > 0
+        ),
     )
 
     # --------------------------------------------------------
-    # Model
+    # MODEL
     # --------------------------------------------------------
 
-    model = create_model(
-        len(class_names)
+    print(
+        "\nBuilding model..."
+    )
+
+    model = build_model(
+        architecture,
+        num_classes,
     )
 
     model = model.to(device)
 
+    parameter_count = sum(
+        p.numel()
+        for p in model.parameters()
+    )
+
+    print(
+        f"Parameters:         "
+        f"{parameter_count:,}"
+    )
+
     # --------------------------------------------------------
-    # Loss / Optimizer
+    # LOSS / OPTIMIZER
     # --------------------------------------------------------
 
     criterion = nn.CrossEntropyLoss()
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=args.learning_rate,
-        weight_decay=WEIGHT_DECAY,
+        lr=learning_rate,
+        weight_decay=weight_decay,
     )
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode="max",
-        factor=0.5,
-        patience=2,
+    scheduler = (
+        torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode="max",
+            factor=0.5,
+            patience=2,
+        )
     )
 
     # --------------------------------------------------------
-    # Training
+    # SAVE CLASS MAPPING
     # --------------------------------------------------------
+
+    class_names_path = (
+        output_dir
+        / output_cfg.get(
+            "class_names",
+            "class_names.json",
+        )
+    )
+
+    class_to_idx_path = (
+        output_dir
+        / output_cfg.get(
+            "class_to_idx",
+            "class_to_idx.json",
+        )
+    )
+
+    save_json(
+        class_names_path,
+        {
+            "classes": classes,
+            "num_classes": num_classes,
+        },
+    )
+
+    save_json(
+        class_to_idx_path,
+        {
+            "class_to_idx": class_to_idx,
+            "idx_to_class": idx_to_class,
+        },
+    )
+
+    # --------------------------------------------------------
+    # TRAINING
+    # --------------------------------------------------------
+
+    print("\n" + "=" * 72)
+    print("TRAINING STARTED")
+    print("=" * 72)
 
     history = []
 
-    best_val_accuracy = 0.0
-
+    best_val_f1 = -1.0
+    best_epoch = 0
     epochs_without_improvement = 0
 
     best_model_path = (
-        output_dir /
-        "best_model.pth"
+        output_dir
+        / output_cfg.get(
+            "best_model",
+            "best_model.pth",
+        )
     )
-
-    print()
-    print("=" * 70)
-    print("TRAINING STARTED")
-    print("=" * 70)
-
-    start_time = time.time()
 
     for epoch in range(
         1,
-        args.epochs + 1
+        epochs + 1,
     ):
 
-        epoch_start = time.time()
-
-        train_loss, train_accuracy = (
-            train_one_epoch(
-                model,
-                train_loader,
-                criterion,
-                optimizer,
-                device,
-            )
+        train_metrics = run_epoch(
+            model=model,
+            loader=train_loader,
+            criterion=criterion,
+            optimizer=optimizer,
+            device=device,
+            training=True,
         )
 
-        (
-            val_loss,
-            val_accuracy,
-            _,
-            _,
-        ) = evaluate(
-            model,
-            val_loader,
-            criterion,
-            device,
+        val_metrics = run_epoch(
+            model=model,
+            loader=val_loader,
+            criterion=criterion,
+            optimizer=None,
+            device=device,
+            training=False,
         )
 
         scheduler.step(
-            val_accuracy
+            val_metrics["macro_f1"]
         )
 
-        current_lr = optimizer.param_groups[0]["lr"]
-
-        elapsed = (
-            time.time() -
-            epoch_start
+        current_lr = (
+            optimizer
+            .param_groups[0]["lr"]
         )
+
+        row = {
+
+            "epoch":
+                epoch,
+
+            "learning_rate":
+                current_lr,
+
+            "train_loss":
+                train_metrics["loss"],
+
+            "train_accuracy":
+                train_metrics["accuracy"],
+
+            "train_macro_f1":
+                train_metrics["macro_f1"],
+
+            "val_loss":
+                val_metrics["loss"],
+
+            "val_accuracy":
+                val_metrics["accuracy"],
+
+            "val_macro_f1":
+                val_metrics["macro_f1"],
+        }
+
+        history.append(row)
 
         print(
-            f"Epoch {epoch:02d}/{args.epochs} | "
-            f"Train Loss: {train_loss:.4f} | "
-            f"Train Acc: {train_accuracy * 100:.2f}% | "
-            f"Val Loss: {val_loss:.4f} | "
-            f"Val Acc: {val_accuracy * 100:.2f}% | "
-            f"LR: {current_lr:.2e} | "
-            f"Time: {elapsed:.1f}s"
+            f"Epoch {epoch:02d}/{epochs} | "
+            f"Train Loss: "
+            f"{train_metrics['loss']:.4f} | "
+            f"Train Acc: "
+            f"{train_metrics['accuracy']:.4f} | "
+            f"Val Loss: "
+            f"{val_metrics['loss']:.4f} | "
+            f"Val Acc: "
+            f"{val_metrics['accuracy']:.4f} | "
+            f"Val F1: "
+            f"{val_metrics['macro_f1']:.4f} | "
+            f"LR: "
+            f"{current_lr:.2e}"
         )
 
-        history.append({
-            "epoch": epoch,
-            "train_loss": float(train_loss),
-            "train_accuracy": float(train_accuracy),
-            "val_loss": float(val_loss),
-            "val_accuracy": float(val_accuracy),
-            "learning_rate": float(current_lr),
-        })
-
         # ----------------------------------------------------
-        # Save best model
+        # BEST MODEL
         # ----------------------------------------------------
 
-        if val_accuracy > best_val_accuracy:
+        if (
+            val_metrics["macro_f1"]
+            > best_val_f1
+        ):
 
-            best_val_accuracy = val_accuracy
+            best_val_f1 = (
+                val_metrics["macro_f1"]
+            )
+
+            best_epoch = epoch
 
             epochs_without_improvement = 0
 
-            checkpoint = {
-                "model_state_dict":
-                    model.state_dict(),
-
-                "class_names":
-                    class_names,
-
-                "class_to_idx":
-                    class_to_idx,
-
-                "image_size":
-                    IMAGE_SIZE,
-
-                "architecture":
-                    "resnet18",
-
-                "best_val_accuracy":
-                    float(best_val_accuracy),
-            }
-
             torch.save(
-                checkpoint,
+                {
+                    "epoch":
+                        epoch,
+
+                    "architecture":
+                        architecture,
+
+                    "model_state_dict":
+                        model.state_dict(),
+
+                    "class_to_idx":
+                        class_to_idx,
+
+                    "idx_to_class":
+                        idx_to_class,
+
+                    "num_classes":
+                        num_classes,
+
+                    "image_size":
+                        image_size,
+
+                    "best_val_macro_f1":
+                        best_val_f1,
+
+                    "config":
+                        config,
+                },
                 best_model_path,
             )
 
             print(
-                f"  ✓ New best model saved "
-                f"({best_val_accuracy * 100:.2f}%)"
+                f"  -> Saved best model "
+                f"(Val Macro-F1: "
+                f"{best_val_f1:.4f})"
             )
 
         else:
@@ -1011,28 +1219,27 @@ def main():
             epochs_without_improvement += 1
 
         # ----------------------------------------------------
-        # Early stopping
+        # EARLY STOPPING
         # ----------------------------------------------------
 
         if (
             epochs_without_improvement
-            >= PATIENCE
+            >= patience
         ):
 
-            print()
             print(
-                "Early stopping triggered."
+                "\nEarly stopping."
+            )
+
+            print(
+                f"Best epoch: "
+                f"{best_epoch}"
             )
 
             break
 
-    total_training_time = (
-        time.time() -
-        start_time
-    )
-
     # --------------------------------------------------------
-    # Save history
+    # TRAINING HISTORY
     # --------------------------------------------------------
 
     history_df = pd.DataFrame(
@@ -1040,8 +1247,11 @@ def main():
     )
 
     history_path = (
-        output_dir /
-        "training_history.csv"
+        output_dir
+        / output_cfg.get(
+            "history",
+            "training_history.csv",
+        )
     )
 
     history_df.to_csv(
@@ -1050,108 +1260,340 @@ def main():
     )
 
     # --------------------------------------------------------
-    # Load best model
+    # LOAD BEST MODEL
     # --------------------------------------------------------
 
-    print()
-    print("=" * 70)
-    print("LOADING BEST MODEL")
-    print("=" * 70)
+    print(
+        "\nLoading best model..."
+    )
 
     checkpoint = torch.load(
         best_model_path,
         map_location=device,
+        weights_only=False,
     )
 
     model.load_state_dict(
         checkpoint["model_state_dict"]
     )
 
+    # --------------------------------------------------------
+    # FINAL TEST
+    # --------------------------------------------------------
+
     print(
-        "Best validation accuracy:",
-        f"{checkpoint['best_val_accuracy'] * 100:.2f}%"
+        "\nRunning final test evaluation..."
     )
 
-    # --------------------------------------------------------
-    # Test
-    # --------------------------------------------------------
-
-    test_model(
+    (
+        test_targets,
+        test_predictions,
+        test_confidences,
+    ) = predict_all(
         model,
         test_loader,
         device,
-        class_names,
-        output_dir,
+    )
+
+    test_accuracy = accuracy_score(
+        test_targets,
+        test_predictions,
+    )
+
+    test_macro_f1 = f1_score(
+        test_targets,
+        test_predictions,
+        average="macro",
+        zero_division=0,
     )
 
     # --------------------------------------------------------
-    # Training metadata
+    # CLASSIFICATION REPORT
+    # --------------------------------------------------------
+
+    report_dict = classification_report(
+        test_targets,
+        test_predictions,
+        labels=list(
+            range(num_classes)
+        ),
+        target_names=classes,
+        output_dict=True,
+        zero_division=0,
+    )
+
+    report_df = pd.DataFrame(
+        report_dict
+    )
+
+    classification_report_path = (
+        output_dir
+        / output_cfg.get(
+            "classification_report",
+            "classification_report.csv",
+        )
+    )
+
+    report_df.to_csv(
+        classification_report_path
+    )
+
+    # --------------------------------------------------------
+    # CONFUSION MATRIX
+    # --------------------------------------------------------
+
+    cm = confusion_matrix(
+        test_targets,
+        test_predictions,
+        labels=list(
+            range(num_classes)
+        ),
+    )
+
+    cm_df = pd.DataFrame(
+        cm,
+        index=classes,
+        columns=classes,
+    )
+
+    confusion_matrix_path = (
+        output_dir
+        / output_cfg.get(
+            "confusion_matrix",
+            "confusion_matrix.csv",
+        )
+    )
+
+    cm_df.to_csv(
+        confusion_matrix_path
+    )
+
+    # --------------------------------------------------------
+    # TEST RESULTS
+    # --------------------------------------------------------
+
+    mean_confidence = float(
+        test_confidences.mean()
+    )
+
+    test_results = {
+
+        "test_images":
+            len(test_targets),
+
+        "test_accuracy":
+            float(test_accuracy),
+
+        "test_macro_f1":
+            float(test_macro_f1),
+
+        "best_epoch":
+            int(best_epoch),
+
+        "best_validation_macro_f1":
+            float(best_val_f1),
+
+        "mean_test_confidence":
+            mean_confidence,
+
+        "architecture":
+            architecture,
+
+        "num_classes":
+            num_classes,
+
+        "classes":
+            classes,
+
+        "device":
+            str(device),
+    }
+
+    test_results_path = (
+        output_dir
+        / output_cfg.get(
+            "test_results",
+            "test_results.json",
+        )
+    )
+
+    save_json(
+        test_results_path,
+        test_results,
+    )
+
+    # --------------------------------------------------------
+    # TRAINING METADATA
     # --------------------------------------------------------
 
     metadata = {
-        "architecture": "resnet18",
-        "num_classes": len(class_names),
-        "class_names": class_names,
-        "image_size": IMAGE_SIZE,
-        "batch_size": args.batch_size,
-        "epochs_requested": args.epochs,
-        "epochs_completed": len(history),
-        "learning_rate": args.learning_rate,
-        "weight_decay": WEIGHT_DECAY,
-        "seed": SEED,
-        "device": str(device),
-        "best_validation_accuracy":
-            float(best_val_accuracy),
-        "training_time_seconds":
-            float(total_training_time),
-        "train_images": len(train_df),
-        "validation_images": len(val_df),
-        "test_images": len(test_df),
+
+        "architecture":
+            architecture,
+
+        "image_size":
+            image_size,
+
+        "batch_size":
+            batch_size,
+
+        "epochs_requested":
+            epochs,
+
+        "epochs_completed":
+            len(history),
+
+        "learning_rate":
+            learning_rate,
+
+        "weight_decay":
+            weight_decay,
+
+        "patience":
+            patience,
+
+        "seed":
+            seed,
+
+        "num_workers":
+            num_workers,
+
+        "num_classes":
+            num_classes,
+
+        "classes":
+            classes,
+
+        "dataset_images":
+            len(df),
+
+        "train_images":
+            len(train_df),
+
+        "validation_images":
+            len(val_df),
+
+        "test_images":
+            len(test_df),
+
+        "best_epoch":
+            best_epoch,
+
+        "best_validation_macro_f1":
+            float(best_val_f1),
+
+        "test_accuracy":
+            float(test_accuracy),
+
+        "test_macro_f1":
+            float(test_macro_f1),
+
+        "mean_test_confidence":
+            mean_confidence,
+
+        "device":
+            str(device),
+
+        "manifest":
+            str(manifest_path),
+
+        "image_root":
+            str(raw_directory),
+
+        "best_model":
+            str(best_model_path),
     }
 
-    with open(
-        output_dir / "training_metadata.json",
-        "w",
-        encoding="utf-8",
-    ) as f:
-
-        json.dump(
-            metadata,
-            f,
-            indent=2,
+    metadata_path = (
+        output_dir
+        / output_cfg.get(
+            "metadata",
+            "training_metadata.json",
         )
+    )
 
-    print()
-    print("=" * 70)
+    save_json(
+        metadata_path,
+        metadata,
+    )
+
+    # --------------------------------------------------------
+    # FINAL OUTPUT
+    # --------------------------------------------------------
+
+    print("\n" + "=" * 72)
     print("TRAINING COMPLETE")
-    print("=" * 70)
+    print("=" * 72)
 
     print(
-        f"Best Val Accuracy: "
-        f"{best_val_accuracy * 100:.2f}%"
+        f"Best epoch:          "
+        f"{best_epoch}"
     )
 
     print(
-        f"Training time: "
-        f"{total_training_time / 60:.2f} minutes"
+        f"Best validation F1:  "
+        f"{best_val_f1:.4f}"
     )
 
-    print()
-    print("OUTPUT FILES:")
-
-    for path in sorted(
-        output_dir.iterdir()
-    ):
-
-        print(
-            " ",
-            path.name
-        )
-
-    print()
     print(
-        "Dataset was NOT modified."
+        f"Test accuracy:       "
+        f"{test_accuracy:.4f}"
     )
+
+    print(
+        f"Test macro-F1:       "
+        f"{test_macro_f1:.4f}"
+    )
+
+    print(
+        f"Mean test confidence:"
+        f" {mean_confidence:.4f}"
+    )
+
+    print("\nOutputs:")
+
+    print(
+        f"  Best model:        "
+        f"{best_model_path}"
+    )
+
+    print(
+        f"  History:           "
+        f"{history_path}"
+    )
+
+    print(
+        f"  Classification:    "
+        f"{classification_report_path}"
+    )
+
+    print(
+        f"  Confusion matrix:  "
+        f"{confusion_matrix_path}"
+    )
+
+    print(
+        f"  Test results:      "
+        f"{test_results_path}"
+    )
+
+    print(
+        f"  Metadata:          "
+        f"{metadata_path}"
+    )
+
+    print("\n" + "=" * 72)
+
+    print(
+        "BASELINE MODEL READY"
+    )
+
+    print(
+        "Next stage: model evaluation "
+        "and explainability (Grad-CAM)."
+    )
+
+    print("=" * 72)
 
 
 if __name__ == "__main__":
