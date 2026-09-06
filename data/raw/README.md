@@ -248,38 +248,7 @@ License
 
 Apache License 2.0, according to the Kaggle dataset page.
 
-5. TACO — External Robustness Dataset
-
-Source:
-https://tacodataset.org/
-
-Type: Object detection / segmentation / litter dataset
-
-Purpose in this project: External generalization and robustness testing
-
-Description
-
-TACO (Trash Annotations in Context) contains images of litter in diverse real-world environments and provides annotations suitable for computer vision tasks such as detection and segmentation.
-
-Role
-
-TACO will initially not be used as a normal training dataset.
-
-Instead, it will be considered as an external evaluation source.
-
-The purpose is to test whether a model trained on other waste datasets can handle:
-
-Different backgrounds
-Outdoor environments
-Different lighting
-Occlusion
-Litter in context
-More complex scenes
-
-This helps us evaluate domain shift and real-world robustness.
-
-
-6. Own / Real-World Test Images (To Be Created)
+5. Own / Real-World Test Images 
 
 In addition to public datasets, we plan to create a small independent collection of photographs for final testing.
 
